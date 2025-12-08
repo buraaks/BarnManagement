@@ -1,7 +1,22 @@
 ##  Phase 1: Temel Altyapı ve Kimlik Doğrulama
 
+### Proje Kurulumu
 
-### Sprint 1.2: Authentication & User Management (Completed)
+- [x]  .NET 10 Web API projesi oluşturma
+- [x]  Solution yapısı organizasyonu
+    - API Layer
+    - Business Layer
+    - Data Access Layer
+    - Core/Domain Layer
+- [x]  Git repository kurulumu ve branch stratejisi
+- [x]  SQL Server bağlantısı ve Code-First yapılandırması
+- [x]  Serilog entegrasyonu
+    - Console logging
+    - File logging (JSON formatında)
+    - Log seviyeleri konfigürasyonu
+- [x]  appsettings.json ve environment ayarları
+
+### Sprint 1.2: Authentication & User Management
 
 
 - [x]  `POST /api/auth/register` - Kullanıcı kaydı
@@ -26,48 +41,54 @@
 
 ##  Phase 2: Core Business Logic
 
-### Sprint 2.1: Çiftlik Yönetimi 
+### Sprint 2.1: Çiftlik Yönetimi
 
 **API Endpoints:**
 
-- [ ]  `POST /api/farms` - Çiftlik oluşturma
-- [ ]  `GET /api/farms/{id}` - Çiftlik detayları
-- [ ]  `PUT /api/farms/{id}` - Çiftlik güncelleme
-- [ ]  `DELETE /api/farms/{id}` - Çiftlik silme
-- [ ]  `GET /api/farms/user/me` - Kullanıcının çiftlikleri
+- [x]  `POST /api/farms` - Çiftlik oluşturma
+- [x]  `GET /api/farms/{id}` - Çiftlik detayları
+- [x]  `PUT /api/farms/{id}` - Çiftlik güncelleme
+- [x]  `DELETE /api/farms/{id}` - Çiftlik silme
+- [x]  `GET /api/farms` - Kullanıcının çiftlikleri (user/me yerine)
 
 **Database:**
 
-- [ ]  Farm tablosu migration
-- [ ]  User-Farm ilişkisi (1-N)
+- [x]  Farm tablosu migration (InitialCreate ile yapıldı)
+- [x]  User-Farm ilişkisi (1-N)
 
 **Business Rules:**
 
-- [ ]  Authorization (sadece çiftlik sahibi işlem yapabilir)
-- [ ]  Çiftlik oluşturma limitleri (opsiyonel)
+- [x]  Authorization (sadece çiftlik sahibi işlem yapabilir)
+
+**UI (BarnManagement.UI):**
+
+- [x]  WinForms projesi oluşturuldu
+- [x]  LoginForm ve RegisterForm
+- [x]  API Client servisi
+- [x]  MainForm temel yapısı
 
 ### Sprint 2.2: Hayvan Yönetimi
 
 **API Endpoints:**
 
-- [ ]  `POST /api/farms/{farmId}/animals/buy` - Hayvan satın alma
+- [x]  `POST /api/farms/{farmId}/animals/buy` - Hayvan satın alma
     - Bakiye kontrolü
     - Fiyat hesaplama
     - Stok kontrolü (opsiyonel)
-- [ ]  `POST /api/animals/{id}/sell` - Hayvan satma
+- [x]  `POST /api/animals/{id}/sell` - Hayvan satma
     - Satış fiyatı hesaplama (yaş, tür vb.)
     - Bakiye güncelleme
 - [ ]  `GET /api/animals` - Hayvan listesi (filtreleme)
-- [ ]  `GET /api/animals/{id}` - Hayvan detayı
-- [ ]  `GET /api/farms/{farmId}/animals` - Çiftliğin hayvanları
+- [x]  `GET /api/animals/{id}` - Hayvan detayı
+- [x]  `GET /api/farms/{farmId}/animals` - Çiftliğin hayvanları
 
 **Database:**
 
-- [ ]  Animal tablosu migration
+- [x]  Animal tablosu migration
     - Species, BirthDate, LifeSpanDays
     - ProductionInterval, NextProductionAt
-    - PurchasePrice, CurrentValue
-- [ ]  Farm-Animal ilişkisi (1-N)
+    - PurchasePrice, SellPrice
+- [x]  Farm-Animal ilişkisi (1-N)
 - [ ]  AnimalType lookup tablosu (opsiyonel)
 
 **Business Rules:**
@@ -75,7 +96,7 @@
 - [ ]  Yaşam süresi takibi
 - [ ]  Üretim zamanı hesaplama
 - [ ]  Fiyat dinamiği
-- [ ]  Bakiye işlemleri (transaction safety)
+- [x]  Bakiye işlemleri (transaction safety)
 
 ---
 

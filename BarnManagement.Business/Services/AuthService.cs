@@ -45,13 +45,6 @@ public class AuthService : IAuthService
         }
 
         // Hashing password
-        // Note: Check if PasswordHash in DB is byte[] or string. 
-        // Project.md says byte[], Entity says byte[].
-        // BCrypt returns string. We need to store it properly.
-        // Wait, standard BCrypt returns a string hash. 
-        // If DB expects byte[], we need to convert.
-        // Let's assume we can store bytes.
-        
         var passwordHashString = BCrypt.Net.BCrypt.HashPassword(request.Password);
         var passwordHashBytes = System.Text.Encoding.UTF8.GetBytes(passwordHashString);
 
@@ -60,11 +53,20 @@ public class AuthService : IAuthService
             Email = request.Email,
             Username = request.Username,
             PasswordHash = passwordHashBytes,
-            Balance = 0, // Initial balance
+            Balance = 1000, // Başlangıç bakiyesi - hayvan satın alabilmek için
             Farms = new List<Farm>()
         };
 
         _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Otomatik olarak bir çiftlik oluştur
+        var defaultFarm = new Farm
+        {
+            Name = $"{request.Username}'ın Çiftliği",
+            OwnerId = user.Id
+        };
+        _context.Farms.Add(defaultFarm);
         await _context.SaveChangesAsync();
 
         var token = _jwtTokenGenerator.GenerateToken(user);

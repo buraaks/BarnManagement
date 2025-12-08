@@ -34,6 +34,9 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Species).HasMaxLength(100);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.PurchasePrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.SellPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Farm).WithMany(p => p.Animals)
                 .HasForeignKey(d => d.FarmId)
@@ -61,6 +64,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.ProductType).HasMaxLength(100);
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.IsSold).HasDefaultValue(false);
 
             entity.HasOne(d => d.Animal).WithMany(p => p.Products)
                 .HasForeignKey(d => d.AnimalId)

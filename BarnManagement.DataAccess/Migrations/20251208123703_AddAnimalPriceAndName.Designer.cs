@@ -4,6 +4,7 @@ using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BarnManagement.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251208123703_AddAnimalPriceAndName")]
+    partial class AddAnimalPriceAndName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,11 +107,6 @@ namespace BarnManagement.DataAccess.Migrations
                     b.Property<Guid>("AnimalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsSold")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<DateTime>("ProducedAt")
                         .HasColumnType("datetime2");
 
@@ -119,9 +117,6 @@ namespace BarnManagement.DataAccess.Migrations
 
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime?>("SoldAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id")
                         .HasName("PK__Products__3214EC0786C019E2");

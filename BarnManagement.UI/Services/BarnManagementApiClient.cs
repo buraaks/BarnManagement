@@ -54,11 +54,30 @@ public class BarnManagementApiClient
 
     public async Task<UserDto?> GetUserProfileAsync()
     {
-        var response = await _httpClient.GetAsync("/api/users/me");
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<UserDto>();
+            // Debug: Manuel olarak header ekle
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/users/me");
+            if (!string.IsNullOrEmpty(_jwtToken))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _jwtToken);
+            }
+            
+            var response = await _httpClient.SendAsync(request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<UserDto>();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                System.Windows.Forms.MessageBox.Show($"GetUserProfile hatası:\nStatus: {response.StatusCode}\nToken var mı: {!string.IsNullOrEmpty(_jwtToken)}\nError: {error}", "API Debug");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Windows.Forms.MessageBox.Show($"GetUserProfile exception: {ex.Message}", "API Debug");
         }
 
         return null;
@@ -66,11 +85,30 @@ public class BarnManagementApiClient
 
     public async Task<List<FarmDto>> GetUserFarmsAsync()
     {
-        var response = await _httpClient.GetAsync("/api/farms");
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<List<FarmDto>>() ?? new List<FarmDto>();
+            // Debug: Manuel olarak header ekle
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/farms");
+            if (!string.IsNullOrEmpty(_jwtToken))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _jwtToken);
+            }
+            
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<FarmDto>>() ?? new List<FarmDto>();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                System.Windows.Forms.MessageBox.Show($"GetUserFarms hatası:\nStatus: {response.StatusCode}\nToken var mı: {!string.IsNullOrEmpty(_jwtToken)}\nError: {error}", "API Debug");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Windows.Forms.MessageBox.Show($"GetUserFarms exception: {ex.Message}", "API Debug");
         }
 
         return new List<FarmDto>();
@@ -89,5 +127,60 @@ public class BarnManagementApiClient
         return null;
     }
 
+    // ==================== Animal Methods ====================
+
+    public async Task<(AnimalDto? Animal, string? Error)> BuyAnimalAsync(Guid farmId, BuyAnimalRequest request)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/farms/{farmId}/animals/buy", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>();
+            return (animal, null);
+        }
+
+        var error = await response.Content.ReadAsStringAsync();
+        return (null, error);
+    }
+
+    public async Task<(AnimalDto? Animal, string? Error)> SellAnimalAsync(Guid animalId)
+    {
+        var response = await _httpClient.PostAsync($"/api/animals/{animalId}/sell", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>();
+            return (animal, null);
+        }
+
+        var error = await response.Content.ReadAsStringAsync();
+        return (null, error);
+    }
+
+    public async Task<List<AnimalDto>> GetFarmAnimalsAsync(Guid farmId)
+    {
+        var response = await _httpClient.GetAsync($"/api/farms/{farmId}/animals");
+
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<List<AnimalDto>>() ?? new List<AnimalDto>();
+        }
+
+        return new List<AnimalDto>();
+    }
+
+    public async Task<AnimalDto?> GetAnimalByIdAsync(Guid animalId)
+    {
+        var response = await _httpClient.GetAsync($"/api/animals/{animalId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<AnimalDto>();
+        }
+
+        return null;
+    }
+
     public bool IsAuthenticated => !string.IsNullOrEmpty(_jwtToken);
 }
+

@@ -11,6 +11,8 @@ public partial class Animal
 
     public string Species { get; set; } = null!;
 
+    public string Name { get; set; } = null!;
+
     public DateTime BirthDate { get; set; }
 
     public int LifeSpanDays { get; set; }
@@ -18,6 +20,10 @@ public partial class Animal
     public int ProductionInterval { get; set; }
 
     public DateTime? NextProductionAt { get; set; }
+
+    public decimal PurchasePrice { get; set; }
+
+    public decimal SellPrice { get; set; }
 
     public bool IsSold { get; set; }
 

@@ -59,3 +59,40 @@ Authorization: Bearer {{authToken}}
 ### Delete Farm
 DELETE {{host}}/api/farms/{{farmId}}
 Authorization: Bearer {{authToken}}
+
+###################################
+# Animal Management Tests
+###################################
+
+### Buy Animal
+# @name buyAnimal
+POST {{host}}/api/farms/{{farmId}}/animals/buy
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "species": "Cow",
+    "name": "Bessie",
+    "purchasePrice": 500,
+    "lifeSpanDays": 365,
+    "productionInterval": 86400
+}
+
+### Get Animal Id
+@animalId = {{buyAnimal.response.body.id}}
+
+### Get Farm Animals
+GET {{host}}/api/farms/{{farmId}}/animals
+Authorization: Bearer {{authToken}}
+
+### Get Animal By Id
+GET {{host}}/api/animals/{{animalId}}
+Authorization: Bearer {{authToken}}
+
+### Sell Animal
+POST {{host}}/api/animals/{{animalId}}/sell
+Authorization: Bearer {{authToken}}
+
+### Check User Balance After Sale
+GET {{host}}/api/users/me
+Authorization: Bearer {{authToken}}

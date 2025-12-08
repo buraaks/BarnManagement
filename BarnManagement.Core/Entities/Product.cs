@@ -15,5 +15,9 @@ public partial class Product
 
     public DateTime ProducedAt { get; set; }
 
+    public bool IsSold { get; set; }
+
+    public DateTime? SoldAt { get; set; }
+
     public virtual Animal Animal { get; set; } = null!;
 }
