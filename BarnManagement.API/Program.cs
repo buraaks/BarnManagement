@@ -1,36 +1,67 @@
 using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
+using BarnManagement.Core.Interfaces;
+using BarnManagement.Core.Entities;
+using BarnManagement.Business.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
-builder.Host.UseSerilog((context, services, configuration) => configuration
-	// Bu satýr tüm ayarlarý appsettings.json'dan okur!
-	.ReadFrom.Configuration(context.Configuration)
-	.ReadFrom.Services(services)
-	.Enrich.FromLogContext());
+// Add services to the container.
 
-// DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
-// Swagger / OpenAPI
+builder.Services.AddControllers();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Authentication Configuration
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+        };
+    });
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// Application Services
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
-// Log middleware
-app.UseSerilogRequestLogging();
-
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.MapOpenApi();
+    app.MapOpenApi();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
-// Basit test endpointi
-app.MapGet("/test", () => "API çalýþýyor!");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

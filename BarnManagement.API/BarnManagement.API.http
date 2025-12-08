@@ -1,6 +1,33 @@
-@BarnManagement.API_HostAddress = http://localhost:5193
+@host = http://localhost:5193
 
-GET {{BarnManagement.API_HostAddress}}
-Accept: application/json
+### Register User
+# @name register
+POST {{host}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "test@example.com",
+  "username": "testuser",
+  "password": "Password123!"
+}
+
+### Login User
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### Get Token
+@authToken = {{login.response.body.token}}
+
+### Get User Profile
+GET {{host}}/api/users/me
+Authorization: Bearer {{authToken}}
+
+### Get Balance
+GET {{host}}/api/users/me/balance
+Authorization: Bearer {{authToken}}

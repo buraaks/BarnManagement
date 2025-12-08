@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BarnManagement.DataAccess.Entities;
+namespace BarnManagement.Core.Entities;
 
 public partial class Product
 {
