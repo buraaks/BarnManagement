@@ -1,0 +1,82 @@
+using BarnManagement.UI.Services;
+using BarnManagement.UI.Models;
+using BarnManagement.UI.CustomControls;
+
+namespace BarnManagement.UI.Forms
+{
+    public partial class MainForm : Form
+    {
+        private readonly BarnManagementApiClient _apiClient;
+        private UserDto? _currentUser;
+        private List<FarmDto> _farms = new();
+        private FarmDto? _selectedFarm;
+
+        public MainForm(BarnManagementApiClient apiClient)
+        {
+            _apiClient = apiClient;
+            InitializeComponent();
+            this.Load += MainForm_Load;
+        }
+
+        private async void MainForm_Load(object? sender, EventArgs e)
+        {
+            await LoadUserDataAsync();
+        }
+
+        private async Task LoadUserDataAsync()
+        {
+            try
+            {
+                // Get user profile
+                _currentUser = await _apiClient.GetUserProfileAsync();
+                if (_currentUser != null)
+                {
+                    cashLabel.Text = $"Nakit: {_currentUser.Balance:C}";
+                }
+
+                // Get user farms
+                _farms = await _apiClient.GetUserFarmsAsync();
+                
+                // TODO: Display farms in a dropdown or list
+                if (_farms.Count > 0)
+                {
+                    _selectedFarm = _farms[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Veri yüklenirken hata: {ex.Message}", "Hata",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void BuyAnimalButton_Click(object? sender, EventArgs e)
+        {
+            MessageBox.Show("Hayvan satın alma özelliği yakında eklenecek!", "Bilgi",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private async void SellProductsButton_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Ürün satma özelliği yakında eklenecek!", "Bilgi",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private async void SellAllProductsButton_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Tüm ürünleri satma özelliği yakında eklenecek!", "Bilgi",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private async void ResetGameButton_Click(object? sender, EventArgs e)
+        {
+            MessageBox.Show("Oyun sıfırlama özelliği yakında eklenecek!", "Bilgi",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+        }
+    }
+}
