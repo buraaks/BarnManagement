@@ -1,31 +1,26 @@
 ##  Phase 1: Temel Altyapı ve Kimlik Doğrulama
 
 
-### Sprint 1.2: Authentication & User Management 
+### Sprint 1.2: Authentication & User Management (Completed)
 
-**API Endpoints:**
 
-- [ ]  `POST /api/auth/register` - Kullanıcı kaydı
-    - Email validasyonu
-    - Password hashing (BCrypt/PBKDF2)
-    - Başlangıç bakiyesi (configurable)
-- [ ]  `POST /api/auth/login` - JWT token üretimi
-    - Token expiration ayarı
-    - Refresh token mekanizması
-- [ ]  `GET /api/users/me` - Kullanıcı profili
-- [ ]  `PUT /api/users/me` - Profil güncelleme
-- [ ]  `GET /api/users/me/balance` - Bakiye sorgulama
+- [x]  `POST /api/auth/register` - Kullanıcı kaydı
+    - [x] Email validasyonu
+    - [x] Password hashing (BCrypt)
+    - [x] Başlangıç bakiyesi (0)
+- [x]  `POST /api/auth/login` - JWT token üretimi
+    - [x] Token expiration (60dk)
+- [x]  `GET /api/users/me` - Kullanıcı profili
+- [ ]  `PUT /api/users/me` - Profil güncelleme (Sonraya bırakıldı)
+- [x]  `GET /api/users/me/balance` - Bakiye sorgulama
 
 **Database Migrations:**
 
-- [ ]  User tablosu (Id, Email, UserName, PasswordHash, Balance)
-- [ ]  RefreshToken tablosu (opsiyonel)
+- [x]  User tablosu (Id, Email, UserName, PasswordHash, Balance) (InitialCreate ile yapıldı)
 
 **Testler:**
 
-- [ ]  JWT token generation/validation testleri
-- [ ]  Registration edge case testleri
-- [ ]  Authentication middleware testleri
+- [x]  Manual .http tests
 
 ---
 

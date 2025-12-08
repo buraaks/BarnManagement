@@ -46,6 +46,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFarmService, FarmService>();
 
 var app = builder.Build();
 
