@@ -47,6 +47,34 @@ namespace BarnManagement.UI.Forms
                 if (_farms.Count > 0)
                 {
                     _selectedFarm = _farms[0];
+                    
+                    // Hayvanları yükle
+                    var animals = await _apiClient.GetFarmAnimalsAsync(_selectedFarm.Id);
+                    animalsGrid.Rows.Clear();
+                    foreach (var animal in animals)
+                    {
+                        var prodProgress = 0; // Şimdilik 0, ileride hesaplanacak
+                        
+                        // ID, Name, Age (hesaplanmalı), Type, Progress
+                        var age = (DateTime.UtcNow - animal.BirthDate).Days;
+                        animalsGrid.Rows.Add(
+                            animal.Id, 
+                            animal.Name, 
+                            $"{age} days", 
+                            animal.Species, 
+                            prodProgress
+                        );
+                    }
+
+                    // Ürünleri yükle
+                    var products = await _apiClient.GetFarmProductsAsync(_selectedFarm.Id);
+                    productsGrid.Rows.Clear();
+                    foreach (var product in products)
+                    {
+                         // ProductDto'da Quantity yok, her ürün tek tek listeleniyor
+                         // Tip, Adet (1), Fiyat
+                         productsGrid.Rows.Add(product.ProductType, 1, product.SalePrice);
+                    }
                 }
                 else
                 {

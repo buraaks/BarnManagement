@@ -105,11 +105,11 @@ namespace BarnManagement.UI.Forms
                     ProductionInterval: GetProductionInterval(animalType)
                 );
 
-                var (animal, error) = await _apiClient.BuyAnimalAsync(_farmId, request);
+                var (success, error) = await _apiClient.BuyAnimalAsync(_farmId, request);
 
-                if (animal != null)
+                if (success)
                 {
-                    MessageBox.Show($"{animal.Name} ({animal.Species}) başarıyla satın alındı!\nFiyat: {animal.PurchasePrice:C}",
+                    MessageBox.Show($"{request.Name} ({request.Species}) başarıyla satın alındı!\nFiyat: {request.PurchasePrice:C}",
                         "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.DialogResult = DialogResult.OK;
                     this.Close();

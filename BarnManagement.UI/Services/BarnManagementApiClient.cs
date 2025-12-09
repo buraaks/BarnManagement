@@ -1,7 +1,9 @@
 using BarnManagement.UI.Models;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace BarnManagement.UI.Services;
 
@@ -9,14 +11,18 @@ public class BarnManagementApiClient
 {
     private readonly HttpClient _httpClient;
     private string? _jwtToken;
+    private readonly JsonSerializerOptions _jsonOptions;
+    
+    public bool IsAuthenticated => !string.IsNullOrEmpty(_jwtToken);
 
     public BarnManagementApiClient(IConfiguration configuration)
     {
-        var apiBaseUrl = configuration["AppSettings:ApiBaseUrl"] ?? "http://localhost:5193";
+        var apiBaseUrl = configuration["AppSettings:ApiBaseUrl"] ?? "https://localhost:7067";
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(apiBaseUrl)
         };
+        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
     public void SetAuthToken(string token)
@@ -29,11 +35,16 @@ public class BarnManagementApiClient
     public async Task<AuthResponse?> LoginAsync(string email, string password)
     {
         var request = new { email, password };
-        var response = await _httpClient.PostAsJsonAsync("/api/auth/login", request);
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        
+        var response = await _httpClient.PostAsync("/api/auth/login", content);
 
         if (response.IsSuccessStatusCode)
         {
-            var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            var authResponse = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, _jsonOptions);
+            
             if (authResponse != null)
             {
                 SetAuthToken(authResponse.Token);
@@ -47,7 +58,10 @@ public class BarnManagementApiClient
     public async Task<bool> RegisterAsync(string email, string username, string password)
     {
         var request = new { email, username, password };
-        var response = await _httpClient.PostAsJsonAsync("/api/auth/register", request);
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync("/api/auth/register", content);
 
         return response.IsSuccessStatusCode;
     }
@@ -56,7 +70,6 @@ public class BarnManagementApiClient
     {
         try
         {
-            // Debug: Manuel olarak header ekle
             var request = new HttpRequestMessage(HttpMethod.Get, "/api/users/me");
             if (!string.IsNullOrEmpty(_jwtToken))
             {
@@ -67,18 +80,11 @@ public class BarnManagementApiClient
             
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<UserDto>();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                System.Windows.Forms.MessageBox.Show($"GetUserProfile hatası:\nStatus: {response.StatusCode}\nToken var mı: {!string.IsNullOrEmpty(_jwtToken)}\nError: {error}", "API Debug");
+                var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<UserDto>(responseStream, _jsonOptions);
             }
         }
-        catch (Exception ex)
-        {
-            System.Windows.Forms.MessageBox.Show($"GetUserProfile exception: {ex.Message}", "API Debug");
-        }
+        catch (Exception) { }
 
         return null;
     }
@@ -87,7 +93,6 @@ public class BarnManagementApiClient
     {
         try
         {
-            // Debug: Manuel olarak header ekle
             var request = new HttpRequestMessage(HttpMethod.Get, "/api/farms");
             if (!string.IsNullOrEmpty(_jwtToken))
             {
@@ -98,18 +103,11 @@ public class BarnManagementApiClient
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<List<FarmDto>>() ?? new List<FarmDto>();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                System.Windows.Forms.MessageBox.Show($"GetUserFarms hatası:\nStatus: {response.StatusCode}\nToken var mı: {!string.IsNullOrEmpty(_jwtToken)}\nError: {error}", "API Debug");
+                var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<List<FarmDto>>(responseStream, _jsonOptions) ?? new List<FarmDto>();
             }
         }
-        catch (Exception ex)
-        {
-            System.Windows.Forms.MessageBox.Show($"GetUserFarms exception: {ex.Message}", "API Debug");
-        }
+        catch (Exception) { }
 
         return new List<FarmDto>();
     }
@@ -117,30 +115,47 @@ public class BarnManagementApiClient
     public async Task<FarmDto?> CreateFarmAsync(string farmName)
     {
         var request = new { name = farmName };
-        var response = await _httpClient.PostAsJsonAsync("/api/farms", request);
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync("/api/farms", content);
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<FarmDto>();
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<FarmDto>(responseStream, _jsonOptions);
         }
 
         return null;
     }
 
-    // ==================== Animal Methods ====================
-
-    public async Task<(AnimalDto? Animal, string? Error)> BuyAnimalAsync(Guid farmId, BuyAnimalRequest request)
+    public async Task<(bool Success, string? Error)> BuyAnimalAsync(Guid farmId, BuyAnimalRequest request)
     {
-        var response = await _httpClient.PostAsJsonAsync($"/api/farms/{farmId}/animals/buy", request);
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync($"/api/farms/{farmId}/animals/buy", content);
 
         if (response.IsSuccessStatusCode)
         {
-            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>();
-            return (animal, null);
+            return (true, null);
         }
 
         var error = await response.Content.ReadAsStringAsync();
-        return (null, error);
+        return (false, error);
+    }
+    
+    public async Task<List<AnimalDto>> GetFarmAnimalsAsync(Guid farmId)
+    {
+        var response = await _httpClient.GetAsync($"/api/farms/{farmId}/animals");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<List<AnimalDto>>(responseStream, _jsonOptions) ?? new List<AnimalDto>();
+        }
+
+        return new List<AnimalDto>();
     }
 
     public async Task<(AnimalDto? Animal, string? Error)> SellAnimalAsync(Guid animalId)
@@ -149,24 +164,13 @@ public class BarnManagementApiClient
 
         if (response.IsSuccessStatusCode)
         {
-            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>();
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            var animal = await JsonSerializer.DeserializeAsync<AnimalDto>(responseStream, _jsonOptions);
             return (animal, null);
         }
 
         var error = await response.Content.ReadAsStringAsync();
         return (null, error);
-    }
-
-    public async Task<List<AnimalDto>> GetFarmAnimalsAsync(Guid farmId)
-    {
-        var response = await _httpClient.GetAsync($"/api/farms/{farmId}/animals");
-
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadFromJsonAsync<List<AnimalDto>>() ?? new List<AnimalDto>();
-        }
-
-        return new List<AnimalDto>();
     }
 
     public async Task<AnimalDto?> GetAnimalByIdAsync(Guid animalId)
@@ -175,12 +179,27 @@ public class BarnManagementApiClient
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<AnimalDto>();
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<AnimalDto>(responseStream, _jsonOptions);
         }
 
         return null;
     }
 
-    public bool IsAuthenticated => !string.IsNullOrEmpty(_jwtToken);
-}
+    public async Task<List<ProductDto>> GetFarmProductsAsync(Guid farmId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/farms/{farmId}/products");
 
+            if (response.IsSuccessStatusCode)
+            {
+                var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<List<ProductDto>>(responseStream, _jsonOptions) ?? new List<ProductDto>();
+            }
+        }
+        catch (Exception) { }
+
+        return new List<ProductDto>();
+    }
+}

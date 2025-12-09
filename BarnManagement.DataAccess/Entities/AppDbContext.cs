@@ -64,7 +64,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.ProductType).HasMaxLength(100);
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.IsSold).HasDefaultValue(false);
+            entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Animal).WithMany(p => p.Products)
                 .HasForeignKey(d => d.AnimalId)

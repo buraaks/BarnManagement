@@ -32,12 +32,7 @@ public class ProductService : IProductService
             return null;
         }
 
-        // 2. Zaten satılmış mı kontrol et
-        if (product.IsSold)
-        {
-            _logger.LogWarning("Product {ProductId} is already sold", productId);
-            throw new InvalidOperationException("Product is already sold.");
-        }
+
 
         // 3. Ürün sahibi kontrolü (Animal → Farm → User)
         if (product.Animal.Farm.OwnerId != userId)
@@ -62,10 +57,8 @@ public class ProductService : IProductService
             user.Balance += product.SalePrice;
             _context.Users.Update(user);
 
-            // Ürünü satıldı olarak işaretle
-            product.IsSold = true;
-            product.SoldAt = DateTime.UtcNow;
-            _context.Products.Update(product);
+            // Ürünü sil (satıldı)
+            _context.Products.Remove(product);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -93,10 +86,10 @@ public class ProductService : IProductService
             return Enumerable.Empty<ProductDto>();
         }
 
-        // Farm'daki hayvanların ürünlerini getir (satılmamış olanlar)
+        // Farm'daki hayvanların ürünlerini getir
         var products = await _context.Products
             .Include(p => p.Animal)
-            .Where(p => p.Animal.FarmId == farmId && !p.IsSold)
+            .Where(p => p.Animal.FarmId == farmId)
             .ToListAsync();
 
         return products.Select(MapToDto);
@@ -117,9 +110,7 @@ public class ProductService : IProductService
             product.AnimalId,
             product.ProductType,
             product.SalePrice,
-            product.ProducedAt,
-            product.IsSold,
-            product.SoldAt
+            product.ProducedAt
         );
     }
 }

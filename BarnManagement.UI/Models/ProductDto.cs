@@ -1,4 +1,4 @@
-namespace BarnManagement.Core.DTOs;
+namespace BarnManagement.UI.Models;
 
 public record ProductDto(
     Guid Id,
