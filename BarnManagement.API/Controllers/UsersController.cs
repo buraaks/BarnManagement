@@ -45,4 +45,16 @@ public class UsersController : ControllerBase
         var balance = await _userService.GetUserBalanceAsync(userId);
         return Ok(new { Balance = balance });
     }
+    [HttpPost("reset")]
+    public async Task<ActionResult> ResetAccount()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        await _userService.ResetAccountAsync(userId);
+        return Ok(new { Message = "Game reset successfully." });
+    }
 }

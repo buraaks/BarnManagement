@@ -44,7 +44,7 @@ namespace BarnManagement.UI.Forms
             return animalType switch
             {
                 "Chicken" => 50m,
-                "Cow" => 500m,
+                "Cow" => 400m,
                 "Sheep" => 200m,
                 _ => 0m
             };
@@ -54,22 +54,21 @@ namespace BarnManagement.UI.Forms
         {
             return animalType switch
             {
-                "Chicken" => 180,
-                "Cow" => 365,
-                "Sheep" => 270,
-                _ => 180
+                "Chicken" => 5,   
+                "Cow" => 10,         
+                "Sheep" => 15,       
+                _ => 5
             };
         }
 
         private int GetProductionInterval(string? animalType)
         {
-            // Saniye cinsinden üretim aralığı
             return animalType switch
             {
-                "Chicken" => 43200,   // 12 saat (yumurta)
-                "Cow" => 86400,       // 24 saat (süt)
-                "Sheep" => 604800,    // 7 gün (yün)
-                _ => 86400
+                "Chicken" => 10,     
+                "Cow" => 15,      
+                "Sheep" => 20,       
+                _ => 20
             };
         }
 

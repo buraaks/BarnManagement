@@ -113,4 +113,51 @@ public class ProductService : IProductService
             product.ProducedAt
         );
     }
+
+    public async Task<decimal> SellAllProductsAsync(Guid farmId, Guid userId)
+    {
+        // 1. Çiftlik sahibi kontrolü
+        var farm = await _context.Farms.FindAsync(farmId);
+        if (farm == null || farm.OwnerId != userId)
+        {
+            throw new UnauthorizedAccessException("You do not own this farm.");
+        }
+
+        // 2. Satılacak ürünleri çek
+        var products = await _context.Products
+            .Where(p => p.Animal.FarmId == farmId) // Zaten sadece satılmamışlar duruyor
+            .ToListAsync();
+
+        if (!products.Any()) return 0m;
+
+        decimal totalEarnings = products.Sum(p => p.SalePrice);
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 3. Kullanıcı bakiyesini güncelle
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.Balance += totalEarnings;
+                _context.Users.Update(user);
+            }
+
+            // 4. Ürünleri sil (Satış = Silme)
+            _context.Products.RemoveRange(products);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            _logger.LogInformation("User {UserId} sold all {Count} products for {Total}", userId, products.Count, totalEarnings);
+
+            return totalEarnings;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Error selling all products for farm {FarmId}", farmId);
+            throw;
+        }
+    }
 }

@@ -10,20 +10,34 @@ namespace BarnManagement.UI.Forms
         private UserDto? _currentUser;
         private List<FarmDto> _farms = new();
         private FarmDto? _selectedFarm;
+        private System.Windows.Forms.Timer _refreshTimer;
 
         public MainForm(BarnManagementApiClient apiClient)
         {
             _apiClient = apiClient;
             InitializeComponent();
+            
+            // Timer kurulumu
+            _refreshTimer = new System.Windows.Forms.Timer();
+            _refreshTimer.Interval = 2000; // 2 saniyede bir yenile
+            _refreshTimer.Tick += async (s, args) => await LoadUserDataAsync(true);
+            
             this.Load += MainForm_Load;
+            this.FormClosing += MainForm_FormClosing;
         }
 
         private async void MainForm_Load(object? sender, EventArgs e)
         {
-            await LoadUserDataAsync();
+            await LoadUserDataAsync(false);
+            _refreshTimer.Start();
+        }
+        
+        private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            _refreshTimer.Stop();
         }
 
-        private async Task LoadUserDataAsync()
+        private async Task LoadUserDataAsync(bool silent = false)
         {
             try
             {
@@ -35,7 +49,7 @@ namespace BarnManagement.UI.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Kullanıcı profili alınamadı!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (!silent) MessageBox.Show("Kullanıcı profili alınamadı!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 // Get user farms
@@ -53,14 +67,37 @@ namespace BarnManagement.UI.Forms
                     animalsGrid.Rows.Clear();
                     foreach (var animal in animals)
                     {
-                        var prodProgress = 0; // Şimdilik 0, ileride hesaplanacak
+                        int prodProgress = 0;
+                        if (animal.NextProductionAt.HasValue && animal.ProductionInterval > 0)
+                        {
+                            var now = DateTime.UtcNow;
+                            var next = animal.NextProductionAt.Value;
+                            
+                            if (next <= now)
+                            {
+                                prodProgress = 100;
+                            }
+                            else
+                            {
+                                // Kalan süreyi hesapla
+                                var remainingSeconds = (next - now).TotalSeconds;
+                                // Geçen süre oranı
+                                var ratio = 1.0 - (remainingSeconds / animal.ProductionInterval);
+                                prodProgress = (int)(ratio * 100);
+                                
+                                // Sınırla
+                                prodProgress = Math.Clamp(prodProgress, 0, 100);
+                            }
+                        }
                         
-                        // ID, Name, Age (hesaplanmalı), Type, Progress
-                        var age = (DateTime.UtcNow - animal.BirthDate).Days;
+                        // YAŞ HESABI: 1 Dakika = 1 Yıl
+                        var totalMinutes = (DateTime.UtcNow - animal.BirthDate).TotalMinutes;
+                        var ageYears = (int)totalMinutes; // Tam sayı yıl
+                        
                         animalsGrid.Rows.Add(
                             animal.Id, 
                             animal.Name, 
-                            $"{age} days", 
+                            $"{ageYears} Yıl", // Yıl olarak göster
                             animal.Species, 
                             prodProgress
                         );
@@ -73,18 +110,24 @@ namespace BarnManagement.UI.Forms
                     {
                          // ProductDto'da Quantity yok, her ürün tek tek listeleniyor
                          // Tip, Adet (1), Fiyat
-                         productsGrid.Rows.Add(product.ProductType, 1, product.SalePrice);
+                         int rowId = productsGrid.Rows.Add(product.ProductType, 1, product.SalePrice);
+                         productsGrid.Rows[rowId].Tag = product.Id; // ID'yi sakla
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Hiç çiftlik bulunamadı! API'den 0 çiftlik döndü.", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    animalsGrid.Rows.Clear();
+                    productsGrid.Rows.Clear();
+                    if (!silent) MessageBox.Show("Hiç çiftlik bulunamadı! API'den 0 çiftlik döndü.", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Veri yüklenirken hata: {ex.Message}", "Hata",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!silent)
+                {
+                    MessageBox.Show($"Veri yüklenirken hata: {ex.Message}", "Hata",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -101,26 +144,73 @@ namespace BarnManagement.UI.Forms
             if (buyForm.ShowDialog() == DialogResult.OK)
             {
                 // Hayvan satın alındı, bakiyeyi güncelle
-                await LoadUserDataAsync();
+                await LoadUserDataAsync(false);
             }
         }
 
         private async void SellProductsButton_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Ürün satma özelliği yakında eklenecek!", "Bilgi",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Kullanıcı isteği üzerine "Sell Products" butonu "Sell All" işlevi görecek.
+            await PerformSellAllProductsAsync();
         }
 
         private async void SellAllProductsButton_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Tüm ürünleri satma özelliği yakında eklenecek!", "Bilgi",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+             await PerformSellAllProductsAsync();
+        }
+
+        private async Task PerformSellAllProductsAsync()
+        {
+            if (_selectedFarm == null) return;
+
+            if (productsGrid.Rows.Count == 0)
+            {
+                MessageBox.Show("Satılacak ürün yok!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirmResult = MessageBox.Show("Tüm ürünleri satmak istediğinize emin misiniz?",
+                                     "Onay",
+                                     MessageBoxButtons.YesNo);
+            
+            if (confirmResult == DialogResult.Yes)
+            {
+                var (success, earnings, error) = await _apiClient.SellAllProductsAsync(_selectedFarm.Id);
+                
+                if (success)
+                {
+                    MessageBox.Show($"Tüm ürünler satıldı! Toplam Kazanç: {earnings:C}", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadUserDataAsync(false);
+                }
+                else
+                {
+                    MessageBox.Show($"Toplu satış başarısız: {error}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private async void ResetGameButton_Click(object? sender, EventArgs e)
         {
-            MessageBox.Show("Oyun sıfırlama özelliği yakında eklenecek!", "Bilgi",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var result = MessageBox.Show(
+                "TÜM İLERLEMENİZ SİLİNECEK!\n\nÇiftlikleriniz, hayvanlarınız ve bakiyeniz sıfırlanacak.\nEmin misiniz?", 
+                "Kritik Uyarı", 
+                MessageBoxButtons.YesNo, 
+                MessageBoxIcon.Warning, 
+                MessageBoxDefaultButton.Button2);
+
+            if (result == DialogResult.Yes)
+            {
+                var success = await _apiClient.ResetGameAsync();
+                if (success)
+                {
+                    MessageBox.Show("Oyun sıfırlandı! Yeni bir başlangıç yapabilirsiniz.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadUserDataAsync(false);
+                }
+                else
+                {
+                    MessageBox.Show("Sıfırlama başarısız oldu.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)

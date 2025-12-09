@@ -202,4 +202,42 @@ public class BarnManagementApiClient
 
         return new List<ProductDto>();
     }
+
+    public async Task<(bool Success, string? Error)> SellProductAsync(Guid productId)
+    {
+        var response = await _httpClient.PostAsync($"/api/products/{productId}/sell", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return (true, null);
+        }
+
+        var error = await response.Content.ReadAsStringAsync();
+        return (false, error);
+    }
+
+    public async Task<(bool Success, decimal TotalEarnings, string? Error)> SellAllProductsAsync(Guid farmId)
+    {
+        var response = await _httpClient.PostAsync($"/api/farms/{farmId}/products/sell-all", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var doc = await JsonDocument.ParseAsync(stream);
+            if (doc.RootElement.TryGetProperty("totalEarnings", out var earningProp))
+            {
+                return (true, earningProp.GetDecimal(), null);
+            }
+            return (true, 0m, null);
+        }
+
+        var error = await response.Content.ReadAsStringAsync();
+        return (false, 0m, error);
+    }
+
+    public async Task<bool> ResetGameAsync()
+    {
+        var response = await _httpClient.PostAsync("/api/users/reset", null);
+        return response.IsSuccessStatusCode;
+    }
 }

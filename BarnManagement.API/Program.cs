@@ -50,6 +50,10 @@ builder.Services.AddScoped<IFarmService, FarmService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
+// Workers
+builder.Services.AddHostedService<BarnManagement.Business.Workers.ProductionWorker>();
+builder.Services.AddHostedService<BarnManagement.Business.Workers.AnimalLifecycleWorker>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

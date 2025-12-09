@@ -54,6 +54,24 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Çiftliğin tüm ürünlerini sat
+    /// </summary>
+    [HttpPost("farms/{farmId}/products/sell-all")]
+    public async Task<ActionResult<decimal>> SellAllProducts(Guid farmId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var totalEarnings = await _productService.SellAllProductsAsync(farmId, userId);
+            return Ok(new { TotalEarnings = totalEarnings });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized("You do not own this farm.");
+        }
+    }
+
+    /// <summary>
     /// Çiftliğin ürünlerini listele
     /// </summary>
     [HttpGet("farms/{farmId}/products")]
