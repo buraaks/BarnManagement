@@ -22,10 +22,15 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         
+        if (user == null)
+        {
+            throw new Exception("Invalid credentials");
+        }
+        
         // Convert stored byte[] hash back to string for BCrypt
         string storedHash = System.Text.Encoding.UTF8.GetString(user.PasswordHash);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, storedHash))
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, storedHash))
         {
             throw new Exception("Invalid credentials");
         }

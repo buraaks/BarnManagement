@@ -107,7 +107,7 @@ public class ProductionWorker : BackgroundService
 
     private decimal CalculateSalePrice(string species)
     {
-        // Basit bir fiyatlandırma
+        //  fiyatlandırma
         return species.ToLower() switch
         {
             "cow" or "inek" => 15.0m,    // Süt

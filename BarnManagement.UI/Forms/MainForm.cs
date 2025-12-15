@@ -90,9 +90,9 @@ namespace BarnManagement.UI.Forms
                             }
                         }
                         
-                        // YAŞ HESABI: 1 Dakika = 1 Yıl
-                        var totalMinutes = (DateTime.UtcNow - animal.BirthDate).TotalMinutes;
-                        var ageYears = (int)totalMinutes; // Tam sayı yıl
+                        // YAŞ HESABI: 30 Saniye = 1 Yıl
+                        var totalSeconds = (DateTime.UtcNow - animal.BirthDate).TotalSeconds;
+                        var ageYears = (int)(totalSeconds / 30.0); // 30 saniyede bir yıl artar
                         
                         animalsGrid.Rows.Add(
                             animal.Id, 

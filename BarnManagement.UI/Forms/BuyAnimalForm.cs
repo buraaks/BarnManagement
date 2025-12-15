@@ -50,16 +50,8 @@ namespace BarnManagement.UI.Forms
             };
         }
 
-        private int GetLifeSpanDays(string? animalType)
-        {
-            return animalType switch
-            {
-                "Chicken" => 5,   
-                "Cow" => 10,         
-                "Sheep" => 15,       
-                _ => 5
-            };
-        }
+
+
 
         private int GetProductionInterval(string? animalType)
         {
@@ -100,7 +92,6 @@ namespace BarnManagement.UI.Forms
                     Species: animalType,
                     Name: animalName,
                     PurchasePrice: GetAnimalPrice(animalType),
-                    LifeSpanDays: GetLifeSpanDays(animalType),
                     ProductionInterval: GetProductionInterval(animalType)
                 );
 

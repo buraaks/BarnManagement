@@ -52,7 +52,6 @@ namespace BarnManagement.UI.Forms
             this.animalTypeComboBox.Size = new System.Drawing.Size(120, 25);
             this.animalTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.AnimalTypeComboBox_SelectedIndexChanged);
 
-            // Fiyat gösterimi
             var priceTextLabel = new System.Windows.Forms.Label();
             priceTextLabel.Location = new System.Drawing.Point(20, 100);
             priceTextLabel.Size = new System.Drawing.Size(100, 20);
@@ -64,9 +63,10 @@ namespace BarnManagement.UI.Forms
             this.priceLabel.Text = GetAnimalPrice("Chicken").ToString("C");
             this.priceLabel.Font = new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Bold);
 
+
             // Satın alma düğmesi
             this.buyButton = new System.Windows.Forms.Button();
-            this.buyButton.Location = new System.Drawing.Point(50, 140);
+            this.buyButton.Location = new System.Drawing.Point(50, 170); // Aşağı kaydı
             this.buyButton.Size = new System.Drawing.Size(80, 30);
             this.buyButton.Text = "Buy";
             this.buyButton.BackColor = System.Drawing.Color.LightGreen;
@@ -74,7 +74,7 @@ namespace BarnManagement.UI.Forms
 
             // İptal düğmesi
             this.cancelButton = new System.Windows.Forms.Button();
-            this.cancelButton.Location = new System.Drawing.Point(170, 140);
+            this.cancelButton.Location = new System.Drawing.Point(170, 170); // Aşağı kaydı
             this.cancelButton.Size = new System.Drawing.Size(80, 30);
             this.cancelButton.Text = "Cancel";
             this.cancelButton.BackColor = System.Drawing.Color.LightCoral;
@@ -90,8 +90,7 @@ namespace BarnManagement.UI.Forms
             this.Controls.Add(this.buyButton);
             this.Controls.Add(this.cancelButton);
 
-            // Başlangıç fiyatını ayarla
-            UpdatePrice();
+            this.ClientSize = new System.Drawing.Size(300, 230); // Boyut arttı
         }
 
         #endregion
@@ -100,6 +99,8 @@ namespace BarnManagement.UI.Forms
         private System.Windows.Forms.ComboBox animalTypeComboBox;
         private System.Windows.Forms.Label priceLabel;
         private System.Windows.Forms.Button buyButton;
+
         private System.Windows.Forms.Button cancelButton;
+        // private System.Windows.Forms.NumericUpDown lifeSpanNumeric; // Removed
     }
 }

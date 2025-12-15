@@ -129,13 +129,13 @@
 
 **Worker Services:**
 
-- [ ]  **ProductionWorker** (IHostedService)
+- [x]  **ProductionWorker** (IHostedService)
     - Her 1 dakikada bir çalışır
     - `NextProductionAt <= Now` kontrolü
     - Otomatik ürün oluşturma
     - NextProductionAt güncelleme
     - Loglama
-- [ ]  **AnimalLifecycleWorker**
+- [x]  **AnimalLifecycleWorker**
     - Her gece 00:00'da çalışır
     - `BirthDate + LifeSpanDays <= Now` kontrolü
     - Hayvanları soft-delete veya hard-delete

@@ -36,9 +36,7 @@ namespace BarnManagement.UI.Forms
 
                 if (authResponse != null)
                 {
-                    // Debug: Token alındı mı?
-                    MessageBox.Show($"Token alındı: {(string.IsNullOrEmpty(authResponse.Token) ? "BOŞ!" : "OK (" + authResponse.Token.Substring(0, Math.Min(20, authResponse.Token.Length)) + "...)")}\nIsAuthenticated: {_apiClient.IsAuthenticated}", 
-                        "Debug", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                     
                     this.DialogResult = DialogResult.OK;
                     this.Close();
