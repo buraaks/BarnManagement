@@ -10,6 +10,8 @@ public partial class Product
     public Guid AnimalId { get; set; }
 
     public string ProductType { get; set; } = null!;
+    
+    public int Quantity { get; set; } = 1;
 
     public decimal SalePrice { get; set; }
 

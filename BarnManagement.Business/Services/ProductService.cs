@@ -54,7 +54,7 @@ public class ProductService : IProductService
         try
         {
             // Bakiyeye satış fiyatını ekle
-            user.Balance += product.SalePrice;
+            user.Balance += product.SalePrice * product.Quantity;
             _context.Users.Update(user);
 
             // Ürünü sil (satıldı)
@@ -110,7 +110,8 @@ public class ProductService : IProductService
             product.AnimalId,
             product.ProductType,
             product.SalePrice,
-            product.ProducedAt
+            product.ProducedAt,
+            product.Quantity
         );
     }
 
@@ -130,7 +131,7 @@ public class ProductService : IProductService
 
         if (!products.Any()) return 0m;
 
-        decimal totalEarnings = products.Sum(p => p.SalePrice);
+        decimal totalEarnings = products.Sum(p => p.SalePrice * p.Quantity);
 
         using var transaction = await _context.Database.BeginTransactionAsync();
         try

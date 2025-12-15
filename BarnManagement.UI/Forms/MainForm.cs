@@ -108,9 +108,9 @@ namespace BarnManagement.UI.Forms
                     productsGrid.Rows.Clear();
                     foreach (var product in products)
                     {
-                         // ProductDto'da Quantity yok, her ürün tek tek listeleniyor
-                         // Tip, Adet (1), Fiyat
-                         int rowId = productsGrid.Rows.Add(product.ProductType, 1, product.SalePrice);
+                         // Quantity artık sunucudan geliyor
+                         // Tip, Adet, Toplam Değer
+                         int rowId = productsGrid.Rows.Add(product.ProductType, product.Quantity, product.SalePrice * product.Quantity);
                          productsGrid.Rows[rowId].Tag = product.Id; // ID'yi sakla
                     }
                 }

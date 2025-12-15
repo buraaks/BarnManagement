@@ -5,5 +5,6 @@ public record ProductDto(
     Guid AnimalId,
     string ProductType,
     decimal SalePrice,
-    DateTime ProducedAt
+    DateTime ProducedAt,
+    int Quantity
 );

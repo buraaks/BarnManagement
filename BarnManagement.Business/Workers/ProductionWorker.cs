@@ -64,14 +64,32 @@ public class ProductionWorker : BackgroundService
                 try
                 {
                     // 1. Ürün oluştur
-                    var product = new Product
+                    // 1. Ürün oluştur veya miktar artır
+                    var productType = GetProductType(animal.Species);
+                    
+                    var existingProduct = await context.Products
+                        .FirstOrDefaultAsync(p => p.AnimalId == animal.Id && p.ProductType == productType, stoppingToken);
+
+                    if (existingProduct != null)
                     {
-                        AnimalId = animal.Id,
-                        ProductType = GetProductType(animal.Species),
-                        ProducedAt = now,
-                        SalePrice = CalculateSalePrice(animal.Species)
-                    };
-                    context.Products.Add(product);
+                        existingProduct.Quantity += 1;
+                        existingProduct.ProducedAt = now; // Son üretim zamanını guncelle
+                        context.Products.Update(existingProduct);
+                        _logger.LogInformation("Animal {AnimalId} produced {ProductType} (Total Quantity: {Quantity}).", animal.Id, productType, existingProduct.Quantity);
+                    }
+                    else
+                    {
+                        var product = new Product
+                        {
+                            AnimalId = animal.Id,
+                            ProductType = productType,
+                            ProducedAt = now,
+                            SalePrice = CalculateSalePrice(animal.Species),
+                            Quantity = 1
+                        };
+                        context.Products.Add(product);
+                         _logger.LogInformation("Animal {AnimalId} produced {ProductType} (New Product).", animal.Id, productType);
+                    }
 
                     // 2. Bir sonraki üretim zamanını güncelle
                     // Eğer çok gecikmişse, şimdiki zamandan değil, olması gereken zamandan ekleyerek gitmek daha doğru olabilir 
@@ -83,7 +101,7 @@ public class ProductionWorker : BackgroundService
                     await context.SaveChangesAsync(stoppingToken);
                     await transaction.CommitAsync(stoppingToken);
 
-                    _logger.LogInformation("Animal {AnimalId} produced {ProductType}.", animal.Id, product.ProductType);
+
                 }
                 catch (Exception ex)
                 {
