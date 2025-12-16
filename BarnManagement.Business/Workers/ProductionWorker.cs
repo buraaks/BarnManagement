@@ -68,7 +68,7 @@ public class ProductionWorker : BackgroundService
                     var productType = GetProductType(animal.Species);
                     
                     var existingProduct = await context.Products
-                        .FirstOrDefaultAsync(p => p.AnimalId == animal.Id && p.ProductType == productType, stoppingToken);
+                        .FirstOrDefaultAsync(p => p.FarmId == animal.FarmId && p.ProductType == productType, stoppingToken);
 
                     if (existingProduct != null)
                     {
@@ -81,7 +81,7 @@ public class ProductionWorker : BackgroundService
                     {
                         var product = new Product
                         {
-                            AnimalId = animal.Id,
+                            FarmId = animal.FarmId, // Assign FarmId for ownership
                             ProductType = productType,
                             ProducedAt = now,
                             SalePrice = CalculateSalePrice(animal.Species),

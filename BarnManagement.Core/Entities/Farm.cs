@@ -12,6 +12,8 @@ public partial class Farm
     public Guid OwnerId { get; set; }
 
     public virtual ICollection<Animal> Animals { get; set; } = new List<Animal>();
+    
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     public virtual User Owner { get; set; } = null!;
 }

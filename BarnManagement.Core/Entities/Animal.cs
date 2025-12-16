@@ -28,6 +28,4 @@ public partial class Animal
     public bool IsSold { get; set; }
 
     public virtual Farm Farm { get; set; } = null!;
-
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

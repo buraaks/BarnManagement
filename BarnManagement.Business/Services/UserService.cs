@@ -41,7 +41,7 @@ public class UserService : IUserService
             // 1. Ürünleri Sil (Hayvan -> Çiftlik -> Kullanıcı ilişkisi üzerinden)
             // SQL: DELETE FROM Products WHERE AnimalId IN (SELECT Id FROM Animals WHERE FarmId IN (SELECT Id FROM Farms WHERE OwnerId = @userId))
             await _context.Products
-                .Where(p => p.Animal.Farm.OwnerId == userId)
+                .Where(p => p.Farm.OwnerId == userId)
                 .ExecuteDeleteAsync();
 
             // 2. Hayvanları Sil

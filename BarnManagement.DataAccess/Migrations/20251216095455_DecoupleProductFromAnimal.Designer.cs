@@ -4,6 +4,7 @@ using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BarnManagement.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216095455_DecoupleProductFromAnimal")]
+    partial class DecoupleProductFromAnimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,6 +104,9 @@ namespace BarnManagement.DataAccess.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("(newid())");
 
+                    b.Property<Guid?>("AnimalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("FarmId")
                         .HasColumnType("uniqueidentifier");
 
@@ -120,6 +126,8 @@ namespace BarnManagement.DataAccess.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__Products__3214EC0786C019E2");
+
+                    b.HasIndex("AnimalId");
 
                     b.HasIndex("FarmId");
 
@@ -183,13 +191,25 @@ namespace BarnManagement.DataAccess.Migrations
 
             modelBuilder.Entity("BarnManagement.Core.Entities.Product", b =>
                 {
+                    b.HasOne("BarnManagement.Core.Entities.Animal", "Animal")
+                        .WithMany("Products")
+                        .HasForeignKey("AnimalId")
+                        .HasConstraintName("FK_Products_Animals");
+
                     b.HasOne("BarnManagement.Core.Entities.Farm", "Farm")
                         .WithMany("Products")
                         .HasForeignKey("FarmId")
                         .IsRequired()
                         .HasConstraintName("FK_Products_Farms");
 
+                    b.Navigation("Animal");
+
                     b.Navigation("Farm");
+                });
+
+            modelBuilder.Entity("BarnManagement.Core.Entities.Animal", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BarnManagement.Core.Entities.Farm", b =>

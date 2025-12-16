@@ -7,7 +7,7 @@ public partial class Product
 {
     public Guid Id { get; set; }
 
-    public Guid AnimalId { get; set; }
+    public Guid FarmId { get; set; }
 
     public string ProductType { get; set; } = null!;
     
@@ -16,6 +16,6 @@ public partial class Product
     public decimal SalePrice { get; set; }
 
     public DateTime ProducedAt { get; set; }
-
-    public virtual Animal Animal { get; set; } = null!;
+    
+    public virtual Farm Farm { get; set; } = null!;
 }

@@ -54,7 +54,7 @@ namespace BarnManagement.UI.Forms
             animalsGrid.Name = "animalsGrid";
             animalsGrid.ReadOnly = true;
             animalsGrid.RowHeadersWidth = 51;
-            animalsGrid.Size = new Size(600, 200);
+            animalsGrid.Size = new Size(600, 256);
             animalsGrid.TabIndex = 0;
             // 
             // dataGridViewTextBoxColumn1
@@ -99,11 +99,11 @@ namespace BarnManagement.UI.Forms
             productsGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             productsGrid.ColumnHeadersHeight = 29;
             productsGrid.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9, dataGridViewTextBoxColumn10 });
-            productsGrid.Location = new Point(20, 250);
+            productsGrid.Location = new Point(20, 298);
             productsGrid.Name = "productsGrid";
             productsGrid.ReadOnly = true;
             productsGrid.RowHeadersWidth = 51;
-            productsGrid.Size = new Size(600, 200);
+            productsGrid.Size = new Size(600, 152);
             productsGrid.TabIndex = 1;
             // 
             // dataGridViewTextBoxColumn8
@@ -149,7 +149,7 @@ namespace BarnManagement.UI.Forms
             // sellProductsButton
             // 
             sellProductsButton.Font = new Font("Arial", 10F);
-            sellProductsButton.Location = new Point(650, 220);
+            sellProductsButton.Location = new Point(650, 298);
             sellProductsButton.Name = "sellProductsButton";
             sellProductsButton.Size = new Size(120, 40);
             sellProductsButton.TabIndex = 8;
@@ -160,7 +160,7 @@ namespace BarnManagement.UI.Forms
             // 
             resetGameButton.BackColor = Color.OrangeRed;
             resetGameButton.Font = new Font("Arial", 10F);
-            resetGameButton.Location = new Point(650, 270);
+            resetGameButton.Location = new Point(650, 410);
             resetGameButton.Name = "resetGameButton";
             resetGameButton.Size = new Size(120, 40);
             resetGameButton.TabIndex = 10;
@@ -186,6 +186,7 @@ namespace BarnManagement.UI.Forms
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Farm Simulation";
+            Load += MainForm_Load_1;
             ((System.ComponentModel.ISupportInitialize)animalsGrid).EndInit();
             ((System.ComponentModel.ISupportInitialize)productsGrid).EndInit();
             ResumeLayout(false);

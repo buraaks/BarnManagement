@@ -66,10 +66,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
 
-            entity.HasOne(d => d.Animal).WithMany(p => p.Products)
-                .HasForeignKey(d => d.AnimalId)
+
+
+            entity.HasOne(d => d.Farm).WithMany(p => p.Products)
+                .HasForeignKey(d => d.FarmId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Products_Animals");
+                .HasConstraintName("FK_Products_Farms");
         });
 
         modelBuilder.Entity<User>(entity =>

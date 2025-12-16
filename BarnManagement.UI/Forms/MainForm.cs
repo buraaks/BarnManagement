@@ -16,12 +16,12 @@ namespace BarnManagement.UI.Forms
         {
             _apiClient = apiClient;
             InitializeComponent();
-            
+
             // Timer kurulumu
             _refreshTimer = new System.Windows.Forms.Timer();
             _refreshTimer.Interval = 2000; // 2 saniyede bir yenile
             _refreshTimer.Tick += async (s, args) => await LoadUserDataAsync(true);
-            
+
             this.Load += MainForm_Load;
             this.FormClosing += MainForm_FormClosing;
         }
@@ -31,7 +31,7 @@ namespace BarnManagement.UI.Forms
             await LoadUserDataAsync(false);
             _refreshTimer.Start();
         }
-        
+
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             _refreshTimer.Stop();
@@ -54,14 +54,14 @@ namespace BarnManagement.UI.Forms
 
                 // Get user farms
                 _farms = await _apiClient.GetUserFarmsAsync();
-                
+
                 // Debug: Kaç çiftlik yüklendiğini göster
                 this.Text = $"Barn Management - {_farms.Count} çiftlik yüklendi";
-                
+
                 if (_farms.Count > 0)
                 {
                     _selectedFarm = _farms[0];
-                    
+
                     // Hayvanları yükle
                     var animals = await _apiClient.GetFarmAnimalsAsync(_selectedFarm.Id);
                     animalsGrid.Rows.Clear();
@@ -72,7 +72,7 @@ namespace BarnManagement.UI.Forms
                         {
                             var now = DateTime.UtcNow;
                             var next = animal.NextProductionAt.Value;
-                            
+
                             if (next <= now)
                             {
                                 prodProgress = 100;
@@ -84,21 +84,21 @@ namespace BarnManagement.UI.Forms
                                 // Geçen süre oranı
                                 var ratio = 1.0 - (remainingSeconds / animal.ProductionInterval);
                                 prodProgress = (int)(ratio * 100);
-                                
+
                                 // Sınırla
                                 prodProgress = Math.Clamp(prodProgress, 0, 100);
                             }
                         }
-                        
+
                         // YAŞ HESABI: 30 Saniye = 1 Yıl
                         var totalSeconds = (DateTime.UtcNow - animal.BirthDate).TotalSeconds;
                         var ageYears = (int)(totalSeconds / 30.0); // 30 saniyede bir yıl artar
-                        
+
                         animalsGrid.Rows.Add(
-                            animal.Id, 
-                            animal.Name, 
+                            animal.Id,
+                            animal.Name,
                             $"{ageYears} Yıl", // Yıl olarak göster
-                            animal.Species, 
+                            animal.Species,
                             prodProgress
                         );
                     }
@@ -106,12 +106,26 @@ namespace BarnManagement.UI.Forms
                     // Ürünleri yükle
                     var products = await _apiClient.GetFarmProductsAsync(_selectedFarm.Id);
                     productsGrid.Rows.Clear();
-                    foreach (var product in products)
+
+                    // Group products by ProductType
+                    var groupedProducts = products
+                        .GroupBy(p => p.ProductType)
+                        .Select(g => new
+                        {
+                            ProductType = g.Key,
+                            TotalQuantity = g.Sum(p => p.Quantity),
+                            TotalValue = g.Sum(p => p.SalePrice * p.Quantity),
+                            // We keep one ID for reference, though Sell-All doesn't need it.
+                            // If single sell is needed, we'd need a different approach.
+                            FirstId = g.First().Id
+                        })
+                        .ToList();
+
+                    foreach (var group in groupedProducts)
                     {
-                         // Quantity artık sunucudan geliyor
-                         // Tip, Adet, Toplam Değer
-                         int rowId = productsGrid.Rows.Add(product.ProductType, product.Quantity, product.SalePrice * product.Quantity);
-                         productsGrid.Rows[rowId].Tag = product.Id; // ID'yi sakla
+                        // Quantity ve Value toplam olarak gösteriliyor
+                        int rowId = productsGrid.Rows.Add(group.ProductType, group.TotalQuantity, group.TotalValue);
+                        productsGrid.Rows[rowId].Tag = group.FirstId;
                     }
                 }
                 else
@@ -156,7 +170,7 @@ namespace BarnManagement.UI.Forms
 
         private async void SellAllProductsButton_Click(object sender, EventArgs e)
         {
-             await PerformSellAllProductsAsync();
+            await PerformSellAllProductsAsync();
         }
 
         private async Task PerformSellAllProductsAsync()
@@ -172,11 +186,11 @@ namespace BarnManagement.UI.Forms
             var confirmResult = MessageBox.Show("Tüm ürünleri satmak istediğinize emin misiniz?",
                                      "Onay",
                                      MessageBoxButtons.YesNo);
-            
+
             if (confirmResult == DialogResult.Yes)
             {
                 var (success, earnings, error) = await _apiClient.SellAllProductsAsync(_selectedFarm.Id);
-                
+
                 if (success)
                 {
                     MessageBox.Show($"Tüm ürünler satıldı! Toplam Kazanç: {earnings:C}", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -192,10 +206,10 @@ namespace BarnManagement.UI.Forms
         private async void ResetGameButton_Click(object? sender, EventArgs e)
         {
             var result = MessageBox.Show(
-                "TÜM İLERLEMENİZ SİLİNECEK!\n\nÇiftlikleriniz, hayvanlarınız ve bakiyeniz sıfırlanacak.\nEmin misiniz?", 
-                "Kritik Uyarı", 
-                MessageBoxButtons.YesNo, 
-                MessageBoxIcon.Warning, 
+                "TÜM İLERLEMENİZ SİLİNECEK!\n\nÇiftlikleriniz, hayvanlarınız ve bakiyeniz sıfırlanacak.\nEmin misiniz?",
+                "Kritik Uyarı",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button2);
 
             if (result == DialogResult.Yes)
@@ -216,6 +230,11 @@ namespace BarnManagement.UI.Forms
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
+        }
+
+        private void MainForm_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

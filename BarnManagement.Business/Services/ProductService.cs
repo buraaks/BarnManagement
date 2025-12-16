@@ -22,8 +22,7 @@ public class ProductService : IProductService
     {
         // 1. Ürünü bul
         var product = await _context.Products
-            .Include(p => p.Animal)
-                .ThenInclude(a => a.Farm)
+            .Include(p => p.Farm)
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product == null)
@@ -35,10 +34,19 @@ public class ProductService : IProductService
 
 
         // 3. Ürün sahibi kontrolü (Animal → Farm → User)
-        if (product.Animal.Farm.OwnerId != userId)
+        // 3. Ürün sahibi kontrolü (Product → Farm → User)
+        // Note: Farm property is needed, ensure it is included or referenced by ID if loaded.
+        // We need to Load Farm incase it was not included.
+        if (product.Farm == null) 
+        {
+             // Try to load farm
+             await _context.Entry(product).Reference(p => p.Farm).LoadAsync();
+        }
+
+        if (product.Farm.OwnerId != userId)
         {
             _logger.LogWarning("User {UserId} attempted to sell product {ProductId} owned by {OwnerId}", 
-                userId, productId, product.Animal.Farm.OwnerId);
+                userId, productId, product.Farm.OwnerId);
             throw new UnauthorizedAccessException("You do not own this product.");
         }
 
@@ -88,8 +96,8 @@ public class ProductService : IProductService
 
         // Farm'daki hayvanların ürünlerini getir
         var products = await _context.Products
-            .Include(p => p.Animal)
-            .Where(p => p.Animal.FarmId == farmId)
+            //.Include(p => p.Animal) // Animal is optional now
+            .Where(p => p.FarmId == farmId)
             .ToListAsync();
 
         return products.Select(MapToDto);
@@ -107,7 +115,6 @@ public class ProductService : IProductService
     {
         return new ProductDto(
             product.Id,
-            product.AnimalId,
             product.ProductType,
             product.SalePrice,
             product.ProducedAt,
@@ -126,7 +133,7 @@ public class ProductService : IProductService
 
         // 2. Satılacak ürünleri çek
         var products = await _context.Products
-            .Where(p => p.Animal.FarmId == farmId) // Zaten sadece satılmamışlar duruyor
+            .Where(p => p.FarmId == farmId) // Zaten sadece satılmamışlar duruyor
             .ToListAsync();
 
         if (!products.Any()) return 0m;
