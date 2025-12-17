@@ -146,6 +146,17 @@ namespace BarnManagement.UI.Forms
             buyAnimalButton.Text = "Buy Animal";
             buyAnimalButton.Click += BuyAnimalButton_Click;
             // 
+            // sellAnimalButton
+            // 
+            sellAnimalButton = new Button();
+            sellAnimalButton.Font = new Font("Arial", 10F);
+            sellAnimalButton.Location = new Point(650, 120);
+            sellAnimalButton.Name = "sellAnimalButton";
+            sellAnimalButton.Size = new Size(120, 40);
+            sellAnimalButton.TabIndex = 4;
+            sellAnimalButton.Text = "Sell Animal";
+            sellAnimalButton.Click += SellAnimalButton_Click;
+            // 
             // sellProductsButton
             // 
             sellProductsButton.Font = new Font("Arial", 10F);
@@ -181,6 +192,7 @@ namespace BarnManagement.UI.Forms
             Controls.Add(productsGrid);
             Controls.Add(cashLabel);
             Controls.Add(buyAnimalButton);
+            Controls.Add(sellAnimalButton);
             Controls.Add(sellProductsButton);
             Controls.Add(resetGameButton);
             Name = "MainForm";
@@ -209,5 +221,6 @@ namespace BarnManagement.UI.Forms
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
+        private Button sellAnimalButton;
     }
 }

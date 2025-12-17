@@ -82,8 +82,7 @@ public class AnimalService : IAnimalService
                 ProductionInterval = request.ProductionInterval,
                 NextProductionAt = DateTime.UtcNow.AddSeconds(request.ProductionInterval),
                 PurchasePrice = request.PurchasePrice,
-                SellPrice = sellPrice,
-                IsSold = false
+                SellPrice = sellPrice
             };
 
             _context.Animals.Add(animal);
@@ -115,13 +114,6 @@ public class AnimalService : IAnimalService
             return null;
         }
 
-        // 2. Zaten satılmış mı kontrol et
-        if (animal.IsSold)
-        {
-            _logger.LogWarning("Animal {AnimalId} is already sold", animalId);
-            throw new InvalidOperationException("Animal is already sold.");
-        }
-
         // 3. Farm sahibi kontrolü
         if (animal.Farm.OwnerId != userId)
         {
@@ -144,9 +136,8 @@ public class AnimalService : IAnimalService
             user.Balance += animal.SellPrice;
             _context.Users.Update(user);
 
-            // Hayvanı satıldı olarak işaretle
-            animal.IsSold = true;
-            _context.Animals.Update(animal);
+            // Hayvanı sil (Satış = Silme)
+            _context.Animals.Remove(animal);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -174,7 +165,7 @@ public class AnimalService : IAnimalService
         }
 
         var animals = await _context.Animals
-            .Where(a => a.FarmId == farmId && !a.IsSold)
+            .Where(a => a.FarmId == farmId)
             .ToListAsync();
 
         return animals.Select(MapToDto);
@@ -200,8 +191,7 @@ public class AnimalService : IAnimalService
             animal.ProductionInterval,
             animal.NextProductionAt,
             animal.PurchasePrice,
-            animal.SellPrice,
-            animal.IsSold
+            animal.SellPrice
         );
     }
 }

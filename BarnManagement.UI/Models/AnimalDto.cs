@@ -10,6 +10,5 @@ public record AnimalDto(
     int ProductionInterval,
     DateTime? NextProductionAt,
     decimal PurchasePrice,
-    decimal SellPrice,
-    bool IsSold
+    decimal SellPrice
 );

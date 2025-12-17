@@ -63,6 +63,13 @@ namespace BarnManagement.UI.Forms
                     _selectedFarm = _farms[0];
 
                     // Hayvanları yükle
+                    // Hayvanları yükle sebelum seçili ID'yi sakla
+                    Guid? selectedAnimalId = null;
+                    if (animalsGrid.SelectedRows.Count > 0)
+                    {
+                        selectedAnimalId = (Guid)animalsGrid.SelectedRows[0].Cells[0].Value;
+                    }
+
                     var animals = await _apiClient.GetFarmAnimalsAsync(_selectedFarm.Id);
                     animalsGrid.Rows.Clear();
                     foreach (var animal in animals)
@@ -94,14 +101,21 @@ namespace BarnManagement.UI.Forms
                         var totalSeconds = (DateTime.UtcNow - animal.BirthDate).TotalSeconds;
                         var ageYears = (int)(totalSeconds / 30.0); // 30 saniyede bir yıl artar
 
-                        animalsGrid.Rows.Add(
+                        int rowIndex = animalsGrid.Rows.Add(
                             animal.Id,
                             animal.Name,
                             $"{ageYears} Yıl", // Yıl olarak göster
                             animal.Species,
                             prodProgress
                         );
+
+                        // Seçimi geri yükle
+                        if (selectedAnimalId.HasValue && animal.Id == selectedAnimalId.Value)
+                        {
+                            animalsGrid.Rows[rowIndex].Selected = true;
+                        }
                     }
+                    // Eğer seçim restore edildiyse, seçimin kaybolmamasını sağla (focus sorunu olabilir ama SelectedRows güncellenir)
 
                     // Ürünleri yükle
                     var products = await _apiClient.GetFarmProductsAsync(_selectedFarm.Id);
@@ -159,6 +173,36 @@ namespace BarnManagement.UI.Forms
             {
                 // Hayvan satın alındı, bakiyeyi güncelle
                 await LoadUserDataAsync(false);
+            }
+        }
+
+        private async void SellAnimalButton_Click(object sender, EventArgs e)
+        {
+            if (animalsGrid.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Lütfen satılacak bir hayvan seçin.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var selectedRow = animalsGrid.SelectedRows[0];
+            var animalId = (Guid)selectedRow.Cells[0].Value;
+            var animalName = selectedRow.Cells[1].Value.ToString();
+
+            var result = MessageBox.Show($"'{animalName}' adlı hayvanı satmak istediğinize emin misiniz?\nBu işlem geri alınamaz!",
+                "Satış Onayı", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                var (animal, error) = await _apiClient.SellAnimalAsync(animalId);
+                if (animal != null)
+                {
+                    MessageBox.Show("Hayvan başarıyla satıldı.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadUserDataAsync(false);
+                }
+                else
+                {
+                    MessageBox.Show($"Satış başarısız: {error}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 

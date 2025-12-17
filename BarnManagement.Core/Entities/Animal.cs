@@ -25,7 +25,7 @@ public partial class Animal
 
     public decimal SellPrice { get; set; }
 
-    public bool IsSold { get; set; }
+
 
     public virtual Farm Farm { get; set; } = null!;
 }
