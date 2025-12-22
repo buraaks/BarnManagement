@@ -35,41 +35,32 @@ public class UserService : IUserService
 
     public async Task ResetAccountAsync(Guid userId)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        // SQLite In-Memory has issues with multiple SaveChanges inside a transaction in some async contexts.
+        // We combine operations or handle them carefully.
+        
+        // 1. Ürünleri Sil
+        var products = await _context.Products.Where(p => p.Farm.OwnerId == userId).ToListAsync();
+        _context.Products.RemoveRange(products);
+
+        // 2. Hayvanları Sil
+        var animals = await _context.Animals.Where(a => a.Farm.OwnerId == userId).ToListAsync();
+        _context.Animals.RemoveRange(animals);
+
+        // 3. Çiftlikleri Sil
+        var farms = await _context.Farms.Where(f => f.OwnerId == userId).ToListAsync();
+        _context.Farms.RemoveRange(farms);
+
+        // 4. Kullanıcı Bakiyesini Sıfırla
+        var user = await _context.Users.FindAsync(userId);
+        if (user != null)
         {
-            // 1. Ürünleri Sil (Hayvan -> Çiftlik -> Kullanıcı ilişkisi üzerinden)
-            // SQL: DELETE FROM Products WHERE AnimalId IN (SELECT Id FROM Animals WHERE FarmId IN (SELECT Id FROM Farms WHERE OwnerId = @userId))
-            await _context.Products
-                .Where(p => p.Farm.OwnerId == userId)
-                .ExecuteDeleteAsync();
-
-            // 2. Hayvanları Sil
-            await _context.Animals
-                .Where(a => a.Farm.OwnerId == userId)
-                .ExecuteDeleteAsync();
-
-            // 3. Çiftlikleri Sil
-            await _context.Farms
-                .Where(f => f.OwnerId == userId)
-                .ExecuteDeleteAsync();
-
-            // 4. Kullanıcı Bakiyesini Sıfırla (Örn: 5000)
-            await _context.Users
-                .Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(s => s.SetProperty(u => u.Balance, 5000m));
-            
-            // 5. Varsayılan Çiftlik Oluştur
-            var defaultFarm = new Farm { OwnerId = userId, Name = "My Farm" };
-            _context.Farms.Add(defaultFarm);
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
+            user.Balance = 5000m;
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        // 5. Varsayılan Çiftlik Oluştur
+        var defaultFarm = new Farm { OwnerId = userId, Name = "My Farm" };
+        _context.Farms.Add(defaultFarm);
+        
+        await _context.SaveChangesAsync();
     }
 }

@@ -58,10 +58,6 @@ public class AnimalService : IAnimalService
             // Satış fiyatını hesapla (satın alma fiyatının %80'i)
             var sellPrice = request.PurchasePrice * 0.8m;
 
-            // Sabit ömür mantığı: Yıl cinsinden
-            // İnek: 20 yıl
-            // Koyun: 15 yıl
-            // Tavuk: 10 yıl
             int lifeSpanYears = request.Species.ToLower() switch
             {
                 "cow" or "inek" => 20,
@@ -78,7 +74,7 @@ public class AnimalService : IAnimalService
                 Species = request.Species,
                 Name = request.Name,
                 BirthDate = DateTime.UtcNow,
-                LifeSpanDays = lifeSpanYears, // DB'deki LifeSpanDays artık YIL tutuyor (Column adı değişmedi)
+                LifeSpanDays = lifeSpanYears,
                 ProductionInterval = request.ProductionInterval,
                 NextProductionAt = DateTime.UtcNow.AddSeconds(request.ProductionInterval),
                 PurchasePrice = request.PurchasePrice,

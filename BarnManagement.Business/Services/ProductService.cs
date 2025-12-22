@@ -33,14 +33,12 @@ public class ProductService : IProductService
 
 
 
-        // 3. Ürün sahibi kontrolü (Animal → Farm → User)
         // 3. Ürün sahibi kontrolü (Product → Farm → User)
-        // Note: Farm property is needed, ensure it is included or referenced by ID if loaded.
-        // We need to Load Farm incase it was not included.
         if (product.Farm == null) 
         {
-             // Try to load farm
-             await _context.Entry(product).Reference(p => p.Farm).LoadAsync();
+             // Try to load farm if not included
+             product.Farm = await _context.Farms.FindAsync(product.FarmId) 
+                            ?? throw new InvalidOperationException("Farm associated with product not found.");
         }
 
         if (product.Farm.OwnerId != userId)

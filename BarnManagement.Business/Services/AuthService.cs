@@ -55,23 +55,25 @@ public class AuthService : IAuthService
 
         var user = new User
         {
+            Id = Guid.NewGuid(), // Manually set Id to ensure it's available for Farm
             Email = request.Email,
             Username = request.Username,
             PasswordHash = passwordHashBytes,
-            Balance = 1000, // Başlangıç bakiyesi - hayvan satın alabilmek için
+            Balance = 1000,
             Farms = new List<Farm>()
         };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
 
         // Otomatik olarak bir çiftlik oluştur
         var defaultFarm = new Farm
         {
+            Id = Guid.NewGuid(),
             Name = $"{request.Username}'ın Çiftliği",
             OwnerId = user.Id
         };
+        
+        _context.Users.Add(user);
         _context.Farms.Add(defaultFarm);
+        
         await _context.SaveChangesAsync();
 
         var token = _jwtTokenGenerator.GenerateToken(user);

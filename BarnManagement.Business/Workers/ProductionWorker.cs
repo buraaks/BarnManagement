@@ -60,10 +60,8 @@ public class ProductionWorker : BackgroundService
             {
                 // Transaction her hayvan için ayrı olabilir veya toplu yapılabilir. 
                 // Hata toleransı için tek tek yapalım.
-                using var transaction = await context.Database.BeginTransactionAsync(stoppingToken);
                 try
                 {
-                    // 1. Ürün oluştur
                     // 1. Ürün oluştur veya miktar artır
                     var productType = GetProductType(animal.Species);
                     
@@ -92,21 +90,14 @@ public class ProductionWorker : BackgroundService
                     }
 
                     // 2. Bir sonraki üretim zamanını güncelle
-                    // Eğer çok gecikmişse, şimdiki zamandan değil, olması gereken zamandan ekleyerek gitmek daha doğru olabilir 
-                    // ama basitleştirmek için "Now + Interval" kullanabiliriz.
-                    // Ya da: Math.Max(Now, NextProductionAt + Interval)
                     animal.NextProductionAt = now.AddSeconds(animal.ProductionInterval);
                     context.Animals.Update(animal);
 
-                    await context.SaveChangesAsync(stoppingToken);
-                    await transaction.CommitAsync(stoppingToken);
-
-
+                    await context.SaveChangesAsync(stoppingToken); // Atomic operation
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to process production for Animal {AnimalId}", animal.Id);
-                    await transaction.RollbackAsync(stoppingToken);
                 }
             }
         }
