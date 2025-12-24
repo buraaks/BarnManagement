@@ -30,12 +30,10 @@ namespace BarnManagement.Tests.Integration
 
             builder.ConfigureServices(services =>
             {
-                // Mevcut DbContext'i kaldır
                 var dbDescriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
                 if (dbDescriptor != null) services.Remove(dbDescriptor);
 
-                // BackgroundWorker'ları kaldır (Testleri bozabilirler)
                 var workerDescriptors = services.Where(
                     d => d.ServiceType == typeof(Microsoft.Extensions.Hosting.IHostedService)).ToList();
                 foreach (var descriptor in workerDescriptors)
@@ -43,7 +41,6 @@ namespace BarnManagement.Tests.Integration
                     services.Remove(descriptor);
                 }
 
-                // appsettings.json ile birebir aynı bağlantı dizesini kullan (Kullanıcı Talebi)
                 var connectionString = "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
 
                 services.AddDbContext<AppDbContext>(options =>
@@ -59,6 +56,8 @@ namespace BarnManagement.Tests.Integration
             {
                 var scopedServices = scope.ServiceProvider;
                 var db = scopedServices.GetRequiredService<AppDbContext>();
+                
+                db.Database.ExecuteSqlRaw("DELETE FROM Products; DELETE FROM Animals; DELETE FROM Farms; DELETE FROM Users;");
                 db.Database.EnsureCreated();
             }
         }

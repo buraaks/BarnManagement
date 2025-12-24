@@ -1,4 +1,5 @@
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Interfaces;
 using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,7 @@ public class ProductionWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ProductionWorker> _logger;
-    private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2); // Hızlı Simülasyon için 2 saniyede bir kontrol
+    private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2);
 
     public ProductionWorker(IServiceProvider serviceProvider, ILogger<ProductionWorker> logger)
     {
@@ -47,7 +48,6 @@ public class ProductionWorker : BackgroundService
 
         var now = DateTime.UtcNow;
 
-        // Üretim zamanı gelmiş (veya geçmiş) hayvanları bul
         var readyAnimals = await context.Animals
             .Where(a => a.NextProductionAt <= now)
             .ToListAsync(stoppingToken);
@@ -58,12 +58,11 @@ public class ProductionWorker : BackgroundService
 
             foreach (var animal in readyAnimals)
             {
-                // Transaction her hayvan için ayrı olabilir veya toplu yapılabilir. 
-                // Hata toleransı için tek tek yapalım.
                 try
                 {
-                    // 1. Ürün oluştur veya miktar artır
                     var productType = GetProductType(animal.Species);
+                    var marketService = scope.ServiceProvider.GetRequiredService<IMarketService>();
+                    var currentPrice = marketService.GetProductPrice(productType);
                     
                     var existingProduct = await context.Products
                         .FirstOrDefaultAsync(p => p.FarmId == animal.FarmId && p.ProductType == productType, stoppingToken);
@@ -71,7 +70,7 @@ public class ProductionWorker : BackgroundService
                     if (existingProduct != null)
                     {
                         existingProduct.Quantity += 1;
-                        existingProduct.ProducedAt = now; // Son üretim zamanını guncelle
+                        existingProduct.ProducedAt = now;
                         context.Products.Update(existingProduct);
                         _logger.LogInformation("Animal {AnimalId} produced {ProductType} (Total Quantity: {Quantity}).", animal.Id, productType, existingProduct.Quantity);
                     }
@@ -79,21 +78,20 @@ public class ProductionWorker : BackgroundService
                     {
                         var product = new Product
                         {
-                            FarmId = animal.FarmId, // Assign FarmId for ownership
+                            FarmId = animal.FarmId,
                             ProductType = productType,
                             ProducedAt = now,
-                            SalePrice = CalculateSalePrice(animal.Species),
+                            SalePrice = currentPrice,
                             Quantity = 1
                         };
                         context.Products.Add(product);
                          _logger.LogInformation("Animal {AnimalId} produced {ProductType} (New Product).", animal.Id, productType);
                     }
 
-                    // 2. Bir sonraki üretim zamanını güncelle
                     animal.NextProductionAt = now.AddSeconds(animal.ProductionInterval);
                     context.Animals.Update(animal);
 
-                    await context.SaveChangesAsync(stoppingToken); // Atomic operation
+                    await context.SaveChangesAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -111,18 +109,6 @@ public class ProductionWorker : BackgroundService
             "chicken" or "tavuk" => "Egg",
             "sheep" or "koyun" => "Wool",
             _ => "Unknown"
-        };
-    }
-
-    private decimal CalculateSalePrice(string species)
-    {
-        //  fiyatlandırma
-        return species.ToLower() switch
-        {
-            "cow" or "inek" => 15.0m,    // Süt
-            "chicken" or "tavuk" => 2.5m, // Yumurta
-            "sheep" or "koyun" => 50.0m,  // Yün
-            _ => 1.0m
         };
     }
 }

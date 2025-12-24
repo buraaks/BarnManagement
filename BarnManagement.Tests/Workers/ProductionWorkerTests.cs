@@ -1,17 +1,17 @@
-using BarnManagement.Business.Workers;
-using BarnManagement.Core.Entities;
-using BarnManagement.DataAccess.Entities;
-using BarnManagement.Tests.Fixtures;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System;
+using BarnManagement.Core.Interfaces;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using BarnManagement.Tests.Fixtures;
+using FluentAssertions;
+using Moq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using BarnManagement.DataAccess.Entities;
+using BarnManagement.Core.Entities;
+using BarnManagement.Business.Workers;
 
 namespace BarnManagement.Tests.Workers
 {
@@ -22,6 +22,7 @@ namespace BarnManagement.Tests.Workers
         private readonly Mock<IServiceScopeFactory> _serviceScopeFactoryMock;
         private readonly Mock<IServiceScope> _serviceScopeMock;
         private readonly Mock<ILogger<ProductionWorker>> _loggerMock;
+        private readonly Mock<IMarketService> _marketServiceMock;
 
         public ProductionWorkerTests(DatabaseFixture fixture)
         {
@@ -30,10 +31,12 @@ namespace BarnManagement.Tests.Workers
             _serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
             _serviceScopeMock = new Mock<IServiceScope>();
             _loggerMock = new Mock<ILogger<ProductionWorker>>();
-
+            _marketServiceMock = new Mock<IMarketService>();
+ 
             _serviceScopeFactoryMock.Setup(x => x.CreateScope()).Returns(_serviceScopeMock.Object);
             _serviceProviderMock.Setup(x => x.GetService(typeof(IServiceScopeFactory))).Returns(_serviceScopeFactoryMock.Object);
             _serviceScopeMock.Setup(x => x.ServiceProvider).Returns(_serviceProviderMock.Object);
+            _serviceProviderMock.Setup(x => x.GetService(typeof(IMarketService))).Returns(_marketServiceMock.Object);
         }
 
         [Fact]
@@ -42,6 +45,7 @@ namespace BarnManagement.Tests.Workers
             // Arrange
             using var context = _fixture.CreateContext();
             _serviceProviderMock.Setup(x => x.GetService(typeof(AppDbContext))).Returns(context);
+            _marketServiceMock.Setup(x => x.GetProductPrice("Egg")).Returns(2.5m);
 
             var now = DateTime.UtcNow;
             var ownerId = Guid.NewGuid();

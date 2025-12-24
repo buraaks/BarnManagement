@@ -10,7 +10,6 @@ public class AnimalLifecycleWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AnimalLifecycleWorker> _logger;
-    // Test için 10 saniye yapalım (Hızlı Simülasyon)
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2); 
 
     public AnimalLifecycleWorker(IServiceProvider serviceProvider, ILogger<AnimalLifecycleWorker> logger)
@@ -47,26 +46,14 @@ public class AnimalLifecycleWorker : BackgroundService
 
         var now = DateTime.UtcNow;
 
-        // Ömrü dolan hayvanları bul
-        // SİMÜLASYON MODU: LifeSpanDays = Dakika cinsinden ömür
-        // Yani 5 girildiyse 5 dakika sonra ölür.
-        var deadAnimals = await context.Animals
-            .ToListAsync(stoppingToken); // Tümünü çekip bellekte filtrelemek zorunda kalabiliriz çünkü EF Core DateTime farklarını tam çeviremeyebilir, veya SQL DATEDIFF kullanılabilir.
+        var deadAnimals = await context.Animals.ToListAsync(stoppingToken);
             
-        // Bellekte filtreleme (Daha güvenli SQL çevirimi için)
-        // LifeSpanDays artik YIL olarak tutuluyor (LifeSpanYears).
-        // Ancak eski kayitlar saniye olarak kalmis olabilir (Orn: 600).
-        // Eger LifeSpanDays > 100 ise bunu "Saniye" olarak varsayalim (Backward Compatibility).
-        // 1 Yil = 30 Saniye.
         var animalsToRemove = deadAnimals
             .Where(a => {
                 var lifeSpanSeconds = a.LifeSpanDays > 100 ? a.LifeSpanDays : (a.LifeSpanDays * 30);
                 var ageSeconds = (now - a.BirthDate).TotalSeconds;
                 var isDead = ageSeconds >= lifeSpanSeconds;
                 
-                 _logger.LogInformation("DEBUG: Checking Animal {Id} ({Species}). DB LifeSpan: {LifeSpanDays} -> ThresholdSec: {AbsThreshold}. Current AgeSec: {Age:F1}. Should Die: {IsDead}", 
-                    a.Id, a.Species, a.LifeSpanDays, lifeSpanSeconds, ageSeconds, isDead);
-
                 return isDead;
             })
             .ToList();
@@ -77,10 +64,7 @@ public class AnimalLifecycleWorker : BackgroundService
 
             foreach (var animal in animalsToRemove)
             {
-                // FK Constraint artik yok (AnimalId nullable)
-                // Urunleri silmiyoruz. Sahibi FarmId uzerinden belirleniyor.
                 context.Animals.Remove(animal);
-                // Log formatted for simulation years (1 Year = 30 Seconds)
                 var ageYears = (now - animal.BirthDate).TotalSeconds / 30.0;
                 _logger.LogInformation("Animal {AnimalId} ({Species}) has died (Age: {Age:F1} Years) and removed.", animal.Id, animal.Species, ageYears);
             }
