@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
 
+// Bu controller'daki işlemler için giriş yapılmış olması şarttır.
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/farms")]
 public class FarmsController : ControllerBase
 {
     private readonly IFarmService _farmService;
@@ -18,6 +19,7 @@ public class FarmsController : ControllerBase
         _farmService = farmService;
     }
 
+    // Token içerisinden o anki kullanıcının ID'sini çeken yardımcı metot.
     private Guid GetUserId()
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -28,77 +30,64 @@ public class FarmsController : ControllerBase
         return userId;
     }
 
-    [HttpPost]
-    public async Task<ActionResult<FarmDto>> CreateFarm(CreateFarmRequest request)
-    {
-        try
-        {
-            var userId = GetUserId();
-            var farm = await _farmService.CreateFarmAsync(request, userId);
-            return CreatedAtAction(nameof(GetFarmById), new { id = farm.Id }, farm);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
-        }
-    }
-
+    // Kullanıcı çiftliklerini listele
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<FarmDto>>> GetUserFarms()
+    public async Task<ActionResult<IEnumerable<FarmDto>>> GetMyFarms()
     {
-        try
-        {
-            var userId = GetUserId();
-            var farms = await _farmService.GetUserFarmsAsync(userId);
-            return Ok(farms);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
-        }
+        var userId = GetUserId();
+        var farms = await _farmService.GetUserFarmsAsync(userId);
+        return Ok(farms);
     }
 
+    // ID ile çiftlik getir
     [HttpGet("{id}")]
     public async Task<ActionResult<FarmDto>> GetFarmById(Guid id)
     {
         var farm = await _farmService.GetFarmByIdAsync(id);
-        if (farm == null) return NotFound();
+        if (farm == null) return NotFound("Çiftlik bulunamadı.");
         return Ok(farm);
     }
 
+    // Yeni çiftlik oluştur
+    [HttpPost]
+    public async Task<ActionResult<FarmDto>> CreateFarm(CreateFarmRequest request)
+    {
+        var userId = GetUserId(); // Çiftlik kime ait olacak? Tabii ki isteği yapana.
+        var farm = await _farmService.CreateFarmAsync(request, userId);
+        return CreatedAtAction(nameof(GetFarmById), new { id = farm.Id }, farm);
+    }
+
+    // Çiftlik güncelle
     [HttpPut("{id}")]
     public async Task<ActionResult<FarmDto>> UpdateFarm(Guid id, UpdateFarmRequest request)
     {
         try
         {
             var userId = GetUserId();
-            var updatedFarm = await _farmService.UpdateFarmAsync(id, request, userId);
-            
-            if (updatedFarm == null) return NotFound("Farm not found or you do not have permission to modify it.");
-            
-            return Ok(updatedFarm);
+            var farm = await _farmService.UpdateFarmAsync(id, request, userId);
+            return Ok(farm);
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized();
+            return Unauthorized("Bu çiftliği güncelleme yetkiniz yok.");
         }
     }
 
+    // Çiftlik sil
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteFarm(Guid id)
+    public async Task<IActionResult> DeleteFarm(Guid id)
     {
         try
         {
             var userId = GetUserId();
             var result = await _farmService.DeleteFarmAsync(id, userId);
+            if (!result) return NotFound("Çiftlik bulunamadı.");
 
-            if (!result) return NotFound("Farm not found or you do not have permission to delete it.");
-
-            return NoContent();
+            return NoContent(); // 204 No Content (Başarıyla silindi)
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized();
+            return Unauthorized("Bu çiftliği silme yetkiniz yok.");
         }
     }
 }

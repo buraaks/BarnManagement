@@ -50,9 +50,6 @@ namespace BarnManagement.UI.Forms
             };
         }
 
-
-
-
         private int GetProductionInterval(string? animalType)
         {
             return animalType switch
@@ -121,7 +118,6 @@ namespace BarnManagement.UI.Forms
                 buyButton.Text = "Buy";
             }
         }
-
         private void CancelButton_Click(object? sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;

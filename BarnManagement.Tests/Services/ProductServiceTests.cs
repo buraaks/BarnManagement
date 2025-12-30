@@ -30,7 +30,7 @@ namespace BarnManagement.Tests.Services
         [Fact]
         public async Task SellProductAsync_ShouldIncreaseBalance_AndRemoveProduct()
         {
-            // Arrange
+            // Hazırlık (Arrange)
             using var context = _fixture.CreateContext();
             var productService = new ProductService(context, _loggerMock.Object);
 
@@ -53,10 +53,10 @@ namespace BarnManagement.Tests.Services
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            // Act
-            var result = await productService.SellProductAsync(product.Id, userId);
+            // İşlem (Act)
+            var result = await productService.SellProductAsync(product.Id, product.Quantity, userId);
 
-            // Assert
+            // Doğrulama (Assert)
             result.Should().NotBeNull();
             
             var updatedUser = await context.Users.FindAsync(userId);
@@ -69,7 +69,7 @@ namespace BarnManagement.Tests.Services
         [Fact]
         public async Task SellAllProductsAsync_ShouldSellEverything_OnFarm()
         {
-            // Arrange
+            // Hazırlık (Arrange)
             using var context = _fixture.CreateContext();
             var productService = new ProductService(context, _loggerMock.Object);
 
@@ -85,10 +85,10 @@ namespace BarnManagement.Tests.Services
             context.Products.AddRange(p1, p2);
             await context.SaveChangesAsync();
 
-            // Act
+            // İşlem (Act)
             var totalEarnings = await productService.SellAllProductsAsync(farm.Id, userId);
 
-            // Assert
+            // Doğrulama (Assert)
             totalEarnings.Should().Be(120); // (2*50) + (10*2)
             
             var updatedUser = await context.Users.FindAsync(userId);

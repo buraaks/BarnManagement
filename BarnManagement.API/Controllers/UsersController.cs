@@ -8,7 +8,7 @@ namespace BarnManagement.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -18,43 +18,49 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet("me")]
-    public async Task<ActionResult<UserDto>> GetMe()
+    private Guid GetUserId()
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
         {
-            return Unauthorized();
+            throw new UnauthorizedAccessException();
         }
+        return userId;
+    }
 
+    // Kendi profil bilgilerini getir
+    [HttpGet("me")]
+    public async Task<ActionResult<UserDto>> GetMyProfile()
+    {
+        var userId = GetUserId();
         var user = await _userService.GetUserByIdAsync(userId);
-        if (user == null) return NotFound();
-
+        
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+        
         return Ok(user);
     }
 
-    [HttpGet("me/balance")]
-    public async Task<ActionResult<decimal>> GetBalance()
+    // ID ile kullanıcı getir
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserDto>> GetUserById(Guid id)
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
-        {
-            return Unauthorized();
-        }
-
-        var balance = await _userService.GetUserBalanceAsync(userId);
-        return Ok(new { Balance = balance });
+        var user = await _userService.GetUserByIdAsync(id);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+        return Ok(user);
     }
+    // Hesabı sıfırla
     [HttpPost("reset")]
-    public async Task<ActionResult> ResetAccount()
+    public async Task<IActionResult> ResetAccount()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        try
         {
-            return Unauthorized();
+            var userId = GetUserId();
+            await _userService.ResetAccountAsync(userId);
+            return Ok(new { message = "Hesap başarıyla sıfırlandı." });
         }
-
-        await _userService.ResetAccountAsync(userId);
-        return Ok(new { Message = "Game reset successfully." });
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

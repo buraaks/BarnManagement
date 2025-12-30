@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace BarnManagement.UI.Services;
 
+// API ile iletişim kuran istemci sınıfı
 public class BarnManagementApiClient
 {
     private readonly HttpClient _httpClient;
@@ -32,6 +33,7 @@ public class BarnManagementApiClient
             new AuthenticationHeaderValue("Bearer", token);
     }
 
+    // Kullanıcı girişi yap ve token'ı sakla
     public async Task<AuthResponse?> LoginAsync(string email, string password)
     {
         var request = new { email, password };
@@ -55,6 +57,7 @@ public class BarnManagementApiClient
         return null;
     }
 
+    // Yeni kullanıcı kaydı
     public async Task<bool> RegisterAsync(string email, string username, string password)
     {
         var request = new { email, username, password };
@@ -66,6 +69,7 @@ public class BarnManagementApiClient
         return response.IsSuccessStatusCode;
     }
 
+    // Kullanıcı profilini getir
     public async Task<UserDto?> GetUserProfileAsync()
     {
         try
@@ -89,6 +93,7 @@ public class BarnManagementApiClient
         return null;
     }
 
+    // Kullanıcıya ait çiftlikleri listele
     public async Task<List<FarmDto>> GetUserFarmsAsync()
     {
         try
@@ -112,6 +117,7 @@ public class BarnManagementApiClient
         return new List<FarmDto>();
     }
 
+    // Yeni çiftlik oluştur
     public async Task<FarmDto?> CreateFarmAsync(string farmName)
     {
         var request = new { name = farmName };
@@ -129,6 +135,7 @@ public class BarnManagementApiClient
         return null;
     }
 
+    // Hayvan satın al
     public async Task<(bool Success, string? Error)> BuyAnimalAsync(Guid farmId, BuyAnimalRequest request)
     {
         var json = JsonSerializer.Serialize(request);
@@ -145,6 +152,7 @@ public class BarnManagementApiClient
         return (false, error);
     }
     
+    // Çiftlikteki hayvanları listele
     public async Task<List<AnimalDto>> GetFarmAnimalsAsync(Guid farmId)
     {
         var response = await _httpClient.GetAsync($"/api/farms/{farmId}/animals");
@@ -158,6 +166,7 @@ public class BarnManagementApiClient
         return new List<AnimalDto>();
     }
 
+    // Hayvan sat
     public async Task<(AnimalDto? Animal, string? Error)> SellAnimalAsync(Guid animalId)
     {
         var response = await _httpClient.PostAsync($"/api/animals/{animalId}/sell", null);
@@ -203,6 +212,7 @@ public class BarnManagementApiClient
         return new List<ProductDto>();
     }
 
+    // Ürün sat
     public async Task<(bool Success, string? Error)> SellProductAsync(Guid productId)
     {
         var response = await _httpClient.PostAsync($"/api/products/{productId}/sell", null);
@@ -216,6 +226,7 @@ public class BarnManagementApiClient
         return (false, error);
     }
 
+    // Tüm ürünleri sat
     public async Task<(bool Success, decimal TotalEarnings, string? Error)> SellAllProductsAsync(Guid farmId)
     {
         var response = await _httpClient.PostAsync($"/api/farms/{farmId}/products/sell-all", null);
@@ -235,6 +246,7 @@ public class BarnManagementApiClient
         return (false, 0m, error);
     }
 
+    // Hesabı sıfırla
     public async Task<bool> ResetGameAsync()
     {
         var response = await _httpClient.PostAsync("/api/users/reset", null);

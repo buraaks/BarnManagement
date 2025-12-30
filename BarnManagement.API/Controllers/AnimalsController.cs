@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
 
+// [Authorize]: Bu controller'daki tüm endpoint'ler için geçerli bir JWT token zorunludur.
 [Authorize]
 [ApiController]
 [Route("api")]
@@ -13,11 +14,13 @@ public class AnimalsController : ControllerBase
 {
     private readonly IAnimalService _animalService;
 
+    // Bağımlılık Enjeksiyonu: AnimalService constructor üzerinden alınır.
     public AnimalsController(IAnimalService animalService)
     {
         _animalService = animalService;
     }
 
+    // Yardımcı Metot: Token içerisindeki 'NameIdentifier' claim'inden kullanıcı ID'sini çeker.
     private Guid GetUserId()
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -28,31 +31,32 @@ public class AnimalsController : ControllerBase
         return userId;
     }
 
-    /// <summary>
-    /// Hayvan satın alma
-    /// </summary>
+    // Çiftliğe hayvan satın al
     [HttpPost("farms/{farmId}/animals/buy")]
     public async Task<ActionResult<AnimalDto>> BuyAnimal(Guid farmId, BuyAnimalRequest request)
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetUserId(); // İsteği yapan kullanıcıyı bul
             var animal = await _animalService.BuyAnimalAsync(farmId, request, userId);
+            
+            // Başarılı olursa 201 Created döner ve yeni hayvanın bilgilerini verir.
             return CreatedAtAction(nameof(GetAnimalById), new { id = animal.Id }, animal);
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized("You do not own this farm.");
+            // Kullanıcı bu çiftliğin sahibi değilse
+            return Unauthorized("Bu çiftliğin sahibi değilsiniz.");
         }
         catch (InvalidOperationException ex)
         {
+            // Bakiye yetersizliği gibi iş mantığı hataları
             return BadRequest(ex.Message);
         }
     }
 
-    /// <summary>
-    /// Hayvan satma
-    /// </summary>
+
+    // Hayvan satışı yap
     [HttpPost("animals/{id}/sell")]
     public async Task<ActionResult<AnimalDto>> SellAnimal(Guid id)
     {
@@ -61,13 +65,14 @@ public class AnimalsController : ControllerBase
             var userId = GetUserId();
             var animal = await _animalService.SellAnimalAsync(id, userId);
 
-            if (animal == null) return NotFound("Animal not found.");
+            if (animal == null) return NotFound("Hayvan bulunamadı.");
 
             return Ok(animal);
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized("You do not own this animal.");
+            // Kullanıcı bu hayvanın sahibi değilse
+            return Unauthorized("Bu hayvanın sahibi değilsiniz.");
         }
         catch (InvalidOperationException ex)
         {
@@ -75,9 +80,8 @@ public class AnimalsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Çiftliğin hayvanlarını listele
-    /// </summary>
+
+    // Çiftlikteki hayvanları listele
     [HttpGet("farms/{farmId}/animals")]
     public async Task<ActionResult<IEnumerable<AnimalDto>>> GetFarmAnimals(Guid farmId)
     {
@@ -93,14 +97,13 @@ public class AnimalsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Hayvan detayı
-    /// </summary>
+
+    // ID ile hayvan getir
     [HttpGet("animals/{id}")]
     public async Task<ActionResult<AnimalDto>> GetAnimalById(Guid id)
     {
         var animal = await _animalService.GetAnimalByIdAsync(id);
-        if (animal == null) return NotFound("Animal not found.");
+        if (animal == null) return NotFound("Hayvan bulunamadı.");
         return Ok(animal);
     }
 }

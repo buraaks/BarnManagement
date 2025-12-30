@@ -20,7 +20,7 @@ public class UserService : IUserService
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
         {
-            throw new Exception("User not found");
+            throw new InvalidOperationException("Kullanıcı bulunamadı.");
         }
         return user.Balance;
     }
@@ -35,8 +35,8 @@ public class UserService : IUserService
 
     public async Task ResetAccountAsync(Guid userId)
     {
-        // SQLite In-Memory has issues with multiple SaveChanges inside a transaction in some async contexts.
-        // We combine operations or handle them carefully.
+        // Veritabanı tutarlılığını sağlamak için tüm silme ve güncelleme işlemlerini 
+        // tek bir SaveChanges çağrısı ile toplu olarak gerçekleştiriyoruz.
         
         // 1. Ürünleri Sil
         var products = await _context.Products.Where(p => p.Farm.OwnerId == userId).ToListAsync();
@@ -54,7 +54,7 @@ public class UserService : IUserService
         var user = await _context.Users.FindAsync(userId);
         if (user != null)
         {
-            user.Balance = 5000m;
+            user.Balance = 1000m;
         }
 
         // 5. Varsayılan Çiftlik Oluştur

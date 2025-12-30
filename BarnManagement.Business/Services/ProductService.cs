@@ -18,9 +18,8 @@ public class ProductService : IProductService
         _logger = logger;
     }
 
-    public async Task<ProductDto?> SellProductAsync(Guid productId, Guid userId)
+    public async Task<ProductDto?> SellProductAsync(Guid productId, int quantity, Guid userId)
     {
-        // 1. Ürünü bul
         var product = await _context.Products
             .Include(p => p.Farm)
             .FirstOrDefaultAsync(p => p.Id == productId);
@@ -31,12 +30,10 @@ public class ProductService : IProductService
             return null;
         }
 
-
-
-        // 3. Ürün sahibi kontrolü (Product → Farm → User)
+        // Ürün sahibi kontrolü (Product -> Farm -> User)
         if (product.Farm == null) 
         {
-             // Try to load farm if not included
+             // Eğer Farm henüz yüklenmemişse, veritabanından getir
              product.Farm = await _context.Farms.FindAsync(product.FarmId) 
                             ?? throw new InvalidOperationException("Farm associated with product not found.");
         }
@@ -48,29 +45,41 @@ public class ProductService : IProductService
             throw new UnauthorizedAccessException("You do not own this product.");
         }
 
-        // 4. Kullanıcıyı bul
+        if (product.Quantity < quantity)
+        {
+            throw new InvalidOperationException("Stokta yeterli ürün yok.");
+        }
+
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
         {
             throw new InvalidOperationException("User not found.");
         }
 
-        // 5. Transaction ile işlem yap
+        // Satışı atomik bir işlem olarak gerçekleştir
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // Bakiyeye satış fiyatını ekle
-            user.Balance += product.SalePrice * product.Quantity;
+            // Bakiyeye satış fiyatını (miktar x birim fiyat) ekle
+            user.Balance += product.SalePrice * quantity;
             _context.Users.Update(user);
 
-            // Ürünü sil (satıldı)
-            _context.Products.Remove(product);
+            // Miktarı düşür veya ürünü sil
+            product.Quantity -= quantity;
+            if (product.Quantity <= 0)
+            {
+                _context.Products.Remove(product);
+            }
+            else
+            {
+                _context.Products.Update(product);
+            }
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            _logger.LogInformation("User {UserId} sold product {ProductId} ({ProductType}) for {Price}", 
-                userId, productId, product.ProductType, product.SalePrice);
+            _logger.LogInformation("User {UserId} sold {Quantity} units of product {ProductId} ({ProductType}) for {Price} each", 
+                userId, quantity, productId, product.ProductType, product.SalePrice);
 
             return MapToDto(product);
         }
@@ -92,9 +101,8 @@ public class ProductService : IProductService
             return Enumerable.Empty<ProductDto>();
         }
 
-        // Farm'daki hayvanların ürünlerini getir
+        // Çiftlikteki mevcut ürünleri getir
         var products = await _context.Products
-            //.Include(p => p.Animal) // Animal is optional now
             .Where(p => p.FarmId == farmId)
             .ToListAsync();
 
@@ -122,16 +130,15 @@ public class ProductService : IProductService
 
     public async Task<decimal> SellAllProductsAsync(Guid farmId, Guid userId)
     {
-        // 1. Çiftlik sahibi kontrolü
+        // Çiftlik sahibi kontrolü
         var farm = await _context.Farms.FindAsync(farmId);
         if (farm == null || farm.OwnerId != userId)
         {
             throw new UnauthorizedAccessException("You do not own this farm.");
         }
 
-        // 2. Satılacak ürünleri çek
         var products = await _context.Products
-            .Where(p => p.FarmId == farmId) // Zaten sadece satılmamışlar duruyor
+            .Where(p => p.FarmId == farmId)
             .ToListAsync();
 
         if (!products.Any()) return 0m;
@@ -141,7 +148,7 @@ public class ProductService : IProductService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // 3. Kullanıcı bakiyesini güncelle
+            // Kullanıcı bakiyesini toplam kazanç kadar artır
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
@@ -149,7 +156,7 @@ public class ProductService : IProductService
                 _context.Users.Update(user);
             }
 
-            // 4. Ürünleri sil (Satış = Silme)
+            // Satılan ürünleri sistemden temizle
             _context.Products.RemoveRange(products);
 
             await _context.SaveChangesAsync();

@@ -5,41 +5,49 @@ using Microsoft.AspNetCore.Mvc;
 namespace BarnManagement.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")] // Tüm istekler /api/auth ile başlar
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
+    // AuthService constructor üzerinden sisteme dahil edilir.
     public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
 
+    // Yeni hesap oluştur
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
         try
         {
-            var response = await _authService.RegisterAsync(request);
-            return Ok(response);
+            var result = await _authService.RegisterAsync(request);
+            // Kayıt başarılı: Token ve kullanıcı bilgileri döner.
+            return Ok(result);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            // Email zaten kullanılıyorsa vb.
+            return BadRequest(ex.Message);
         }
     }
+
+    // Kullanıcı girişi ve token alımı
 
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         try
         {
-            var response = await _authService.LoginAsync(request);
-            return Ok(response);
+            var result = await _authService.LoginAsync(request);
+            // Giriş başarılı: Kullanıcıya oturum için JWT token verilir.
+            return Ok(result);
         }
-        catch (Exception ex)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(new { message = ex.Message });
+            // Şifre veya Email yanlışsa
+            return Unauthorized(ex.Message);
         }
     }
 }

@@ -20,7 +20,7 @@ public class AnimalService : IAnimalService
 
     public async Task<AnimalDto> BuyAnimalAsync(Guid farmId, BuyAnimalRequest request, Guid userId)
     {
-        // 1. Farm'ın var olduğunu ve kullanıcıya ait olduğunu kontrol et
+        // Hayvanın ekleneceği çiftliği bul ve sahiplik kontrolü yap
         var farm = await _context.Farms.FindAsync(farmId);
         if (farm == null)
         {
@@ -34,7 +34,7 @@ public class AnimalService : IAnimalService
             throw new UnauthorizedAccessException("You do not own this farm.");
         }
 
-        // 2. Kullanıcının bakiyesini kontrol et
+        // Kullanıcı bakiyesi yeterli mi kontrol et
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
         {
@@ -47,7 +47,7 @@ public class AnimalService : IAnimalService
             throw new InvalidOperationException("Insufficient balance.");
         }
 
-        // 3. Transaction ile işlem yap
+        // Alım işlemini atomik olarak gerçekleştir
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -55,7 +55,7 @@ public class AnimalService : IAnimalService
             user.Balance -= request.PurchasePrice;
             _context.Users.Update(user);
 
-            // Satış fiyatını hesapla (satın alma fiyatının %80'i)
+            // Geri satış fiyatını hesapla (satın alma fiyatının %80'i)
             var sellPrice = request.PurchasePrice * 0.8m;
 
             int lifeSpanYears = request.Species.ToLower() switch
@@ -66,7 +66,7 @@ public class AnimalService : IAnimalService
                 _ => 10 // Varsayılan
             };
 
-            // Animal kaydı oluştur
+            // Yeni hayvan kaydı oluştur
             var animal = new Animal
             {
                 Id = Guid.NewGuid(),
@@ -99,7 +99,7 @@ public class AnimalService : IAnimalService
 
     public async Task<AnimalDto?> SellAnimalAsync(Guid animalId, Guid userId)
     {
-        // 1. Hayvanı bul
+        // Hayvanı bul ve sahiplik kontrolü yap
         var animal = await _context.Animals
             .Include(a => a.Farm)
             .FirstOrDefaultAsync(a => a.Id == animalId);
@@ -110,21 +110,19 @@ public class AnimalService : IAnimalService
             return null;
         }
 
-        // 3. Farm sahibi kontrolü
         if (animal.Farm.OwnerId != userId)
         {
             _logger.LogWarning("User {UserId} attempted to sell animal {AnimalId} owned by {OwnerId}", userId, animalId, animal.Farm.OwnerId);
             throw new UnauthorizedAccessException("You do not own this animal.");
         }
 
-        // 4. Kullanıcıyı bul
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
         {
             throw new InvalidOperationException("User not found.");
         }
 
-        // 5. Transaction ile işlem yap
+        // Satış işlemini atomik olarak gerçekleştir
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -132,7 +130,7 @@ public class AnimalService : IAnimalService
             user.Balance += animal.SellPrice;
             _context.Users.Update(user);
 
-            // Hayvanı sil (Satış = Silme)
+            // Hayvan kaydını sil
             _context.Animals.Remove(animal);
 
             await _context.SaveChangesAsync();

@@ -3,7 +3,6 @@ using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
 using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
 
 namespace BarnManagement.Business.Services;
 
@@ -24,21 +23,21 @@ public class AuthService : IAuthService
         
         if (user == null)
         {
-            throw new Exception("Invalid credentials");
+            throw new UnauthorizedAccessException("Giriş bilgileri hatalı.");
         }
         
-        // Convert stored byte[] hash back to string for BCrypt
+        // Saklanan byte[] hash bilgisini BCrypt doğrulaması için string formatına dönüştürün
         string storedHash = System.Text.Encoding.UTF8.GetString(user.PasswordHash);
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, storedHash))
         {
-            throw new Exception("Invalid credentials");
+            throw new UnauthorizedAccessException("Giriş bilgileri hatalı.");
         }
 
         var token = _jwtTokenGenerator.GenerateToken(user);
         
-        // Expiration is hardcoded in generator for now, aiming for simplicity. 
-        // In a real scenario we'd get the expiration from the generator or config.
+        // Sadelik açısından geçerlilik süresi şimdilik üreteç içinde sabitlenmiştir.
+        // Gerçek bir senaryoda bu süreyi üreteçten veya yapılandırmadan alırdık.
         return new AuthResponse(token, DateTime.UtcNow.AddMinutes(60)); 
     }
 
@@ -46,16 +45,16 @@ public class AuthService : IAuthService
     {
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
-            throw new Exception("Email already exists");
+            throw new InvalidOperationException("Bu e-posta adresi zaten kullanımda.");
         }
 
-        // Hashing password
+        // Parolayı hash'leme
         var passwordHashString = BCrypt.Net.BCrypt.HashPassword(request.Password);
         var passwordHashBytes = System.Text.Encoding.UTF8.GetBytes(passwordHashString);
 
         var user = new User
         {
-            Id = Guid.NewGuid(), // Manually set Id to ensure it's available for Farm
+            Id = Guid.NewGuid(), // Farm için kullanılabilir olduğundan emin olmak için Id'yi manuel olarak atayın
             Email = request.Email,
             Username = request.Username,
             PasswordHash = passwordHashBytes,

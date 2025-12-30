@@ -49,7 +49,7 @@ public class FarmService : IFarmService
     {
         var farm = await _context.Farms.FindAsync(farmId);
         
-        // Farm not found or not owned by user
+        // Çiftlik bulunamadı veya kullanıcıya ait değil
         if (farm == null || farm.OwnerId != ownerId) return null;
 
         farm.Name = request.Name;
@@ -62,7 +62,7 @@ public class FarmService : IFarmService
     {
         var farm = await _context.Farms.FindAsync(farmId);
 
-        // Farm not found or not owned by user
+        // Çiftlik bulunamadı veya kullanıcıya ait değil
         if (farm == null || farm.OwnerId != ownerId) return false;
 
         _context.Farms.Remove(farm);
