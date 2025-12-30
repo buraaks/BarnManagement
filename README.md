@@ -1,4 +1,4 @@
-# BarnManagement 🌾🐄
+# BarnManagement 
 
 BarnManagement, kullanıcıların kendi çiftliklerini yönetebildiği, hayvan satın alıp ürün (süt, yumurta, yün) üretebildiği ve bu ürünleri satarak bakiye yönetimi yapabildiği kapsamlı bir çiftlik simülasyonu uygulamasıdır.
 
