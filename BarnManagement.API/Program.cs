@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 // Uygulama oluşturucu (Builder) başlatılıyor.
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +21,52 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddControllers();
 
 // OpenAPI/Swagger desteği ekleniyor (API dökümantasyonu için).
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "Barn Management API", 
+        Version = "v1",
+        Description = "Barn Management - Çiftlik ve Hayvan Yönetim Sistemi API",
+        Contact = new OpenApiContact
+        {
+            Name = "Barn Management Support",
+            Email = "support@barnmanagement.com"
+        }
+    });
+
+    // JWT Yetkilendirme desteği ekle
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Token girişi yapın. Örnek: 'Bearer {token}'"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    // XML yorumlarını Swagger'a dahil et
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+});
 
 // Sağlık kontrolleri (Health Checks) ekleniyor. Veritabanı bağlantısı kontrol edilir.
 builder.Services.AddHealthChecks()
@@ -68,7 +115,12 @@ var app = builder.Build();
 // Geliştirme ortamında Swagger/OpenAPI haritasını çıkar.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Barn Management API v1");
+        options.RoutePrefix = "swagger"; // Swagger UI'ya /swagger adresinden erişilecek
+    });
 }
 
 // Serilog ile gelen HTTP isteklerini otomatik logla.
