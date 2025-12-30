@@ -40,6 +40,17 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
+    // Bakiyeyi getir
+    [HttpGet("me/balance")]
+    public async Task<ActionResult<object>> GetMyBalance()
+    {
+        var userId = GetUserId();
+        var user = await _userService.GetUserByIdAsync(userId);
+        if (user == null) return NotFound("Kullanıcı bulunamadı.");
+        
+        return Ok(new { balance = user.Balance });
+    }
+
     // ID ile kullanıcı getir
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetUserById(Guid id)

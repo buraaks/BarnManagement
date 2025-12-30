@@ -1,5 +1,6 @@
 using BarnManagement.Business.Workers;
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Enums;
 using BarnManagement.DataAccess.Entities;
 using BarnManagement.Tests.Fixtures;
 using FluentAssertions;
@@ -58,7 +59,7 @@ namespace BarnManagement.Tests.Workers
             var aliveCow = new Animal { 
                 Id = Guid.NewGuid(), 
                 FarmId = farmId,
-                Species = "Cow", 
+                Species = AnimalSpecies.Cow, 
                 Name = "Alive", 
                 LifeSpanDays = 20, 
                 BirthDate = now.AddSeconds(-500) 
@@ -68,7 +69,7 @@ namespace BarnManagement.Tests.Workers
             var deadCow = new Animal { 
                 Id = Guid.NewGuid(), 
                 FarmId = farmId,
-                Species = "Cow", 
+                Species = AnimalSpecies.Cow, 
                 Name = "Dead", 
                 LifeSpanDays = 20, 
                 BirthDate = now.AddSeconds(-601) 

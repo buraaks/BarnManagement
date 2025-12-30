@@ -105,7 +105,7 @@ namespace BarnManagement.UI.Forms
                             animal.Id,
                             animal.Name,
                             $"{ageYears} Yıl", // Yıl olarak göster
-                            animal.Species,
+                            animal.Species.ToString(),
                             prodProgress
                         );
 

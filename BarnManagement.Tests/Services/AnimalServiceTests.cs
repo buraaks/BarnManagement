@@ -2,6 +2,7 @@ using BarnManagement.Business.Services;
 using BarnManagement.Core.DTOs;
 using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Enums;
 using BarnManagement.DataAccess.Entities;
 using BarnManagement.Tests.Fixtures;
 using FluentAssertions;
@@ -42,14 +43,14 @@ namespace BarnManagement.Tests.Services
             context.Farms.Add(farm);
             await context.SaveChangesAsync();
 
-            var request = new BuyAnimalRequest("Cow", "Daisy", 500, 60);
+            var request = new BuyAnimalRequest(AnimalSpecies.Cow, "Daisy", 500, 60);
 
             // Act
             var result = await animalService.BuyAnimalAsync(farm.Id, request, userId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Species.Should().Be("Cow");
+            result.Species.Should().Be(AnimalSpecies.Cow);
             result.PurchasePrice.Should().Be(500);
 
             var updatedUser = await context.Users.FindAsync(userId);
@@ -75,7 +76,7 @@ namespace BarnManagement.Tests.Services
             context.Farms.Add(farm);
             await context.SaveChangesAsync();
 
-            var request = new BuyAnimalRequest("Cow", "TooExpensive", 500, 60);
+            var request = new BuyAnimalRequest(AnimalSpecies.Cow, "TooExpensive", 500, 60);
 
             // Act
             Func<Task> act = async () => await animalService.BuyAnimalAsync(farm.Id, request, userId);
@@ -98,7 +99,7 @@ namespace BarnManagement.Tests.Services
             {
                 Id = Guid.NewGuid(),
                 FarmId = farm.Id,
-                Species = "Sheep",
+                Species = AnimalSpecies.Sheep,
                 Name = "ToSell",
                 SellPrice = 300,
                 Farm = farm
@@ -138,7 +139,7 @@ namespace BarnManagement.Tests.Services
             {
                 Id = Guid.NewGuid(),
                 FarmId = farm.Id,
-                Species = "Cow",
+                Species = AnimalSpecies.Cow,
                 Name = "Owner's Cow",
                 Farm = farm
             };
@@ -152,6 +153,39 @@ namespace BarnManagement.Tests.Services
 
             // Assert
             await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+
+        [Fact]
+        public async Task GetAnimalByIdAsync_ShouldReturnNull_IfNotOwnedByUser()
+        {
+            // Arrange
+            using var context = _fixture.CreateContext();
+            var animalService = new AnimalService(context, _loggerMock.Object);
+
+            var ownerId = Guid.NewGuid();
+            var thiefId = Guid.NewGuid();
+            var user = new User { Id = ownerId, Email = "animal_owner@test.com", Username = "animalowner", PasswordHash = new byte[0] };
+            context.Users.Add(user);
+            
+            var farm = new Farm { Id = Guid.NewGuid(), Name = "Secure Farm", OwnerId = ownerId };
+            var animal = new Animal
+            {
+                Id = Guid.NewGuid(),
+                FarmId = farm.Id,
+                Species = AnimalSpecies.Cow,
+                Name = "Secret Cow",
+                Farm = farm
+            };
+
+            context.Farms.Add(farm);
+            context.Animals.Add(animal);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await animalService.GetAnimalByIdAsync(animal.Id, thiefId);
+
+            // Assert
+            result.Should().BeNull();
         }
     }
 }

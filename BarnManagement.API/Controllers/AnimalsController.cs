@@ -102,8 +102,9 @@ public class AnimalsController : ControllerBase
     [HttpGet("animals/{id}")]
     public async Task<ActionResult<AnimalDto>> GetAnimalById(Guid id)
     {
-        var animal = await _animalService.GetAnimalByIdAsync(id);
-        if (animal == null) return NotFound("Hayvan bulunamadı.");
+        var userId = GetUserId();
+        var animal = await _animalService.GetAnimalByIdAsync(id, userId);
+        if (animal == null) return NotFound("Hayvan bulunamadı veya bu hayvana erişim yetkiniz yok.");
         return Ok(animal);
     }
 }

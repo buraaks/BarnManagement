@@ -73,8 +73,9 @@ public class ProductsController : ControllerBase
     [HttpGet("products/{id}")]
     public async Task<ActionResult<ProductDto>> GetProductById(Guid id)
     {
-        var product = await _productService.GetProductByIdAsync(id);
-        if (product == null) return NotFound("Ürün bulunamadı.");
+        var userId = GetUserId();
+        var product = await _productService.GetProductByIdAsync(id, userId);
+        if (product == null) return NotFound("Ürün bulunamadı veya bu ürüne erişim yetkiniz yok.");
         return Ok(product);
     }
     // Tüm ürünleri sat

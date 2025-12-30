@@ -84,7 +84,7 @@ namespace BarnManagement.Tests.Integration
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("successfully");
+            content.Should().Contain("başarıyla");
         }
     }
 }

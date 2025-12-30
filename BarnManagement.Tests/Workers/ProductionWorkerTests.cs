@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using BarnManagement.DataAccess.Entities;
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Enums;
 using BarnManagement.Business.Workers;
 
 namespace BarnManagement.Tests.Workers
@@ -63,7 +64,7 @@ namespace BarnManagement.Tests.Workers
             {
                 Id = Guid.NewGuid(),
                 FarmId = farmId,
-                Species = "Chicken", // Produces Egg
+                Species = AnimalSpecies.Chicken, // Produces Egg
                 Name = "Henrietta",
                 BirthDate = now.AddMonths(-1),
                 NextProductionAt = now.AddMinutes(-5), // 5 dakika gecikmis
@@ -75,7 +76,7 @@ namespace BarnManagement.Tests.Workers
             {
                 Id = Guid.NewGuid(),
                 FarmId = farmId,
-                Species = "Cow",
+                Species = AnimalSpecies.Cow,
                 Name = "Bessie",
                 BirthDate = now.AddMonths(-1),
                 NextProductionAt = now.AddMinutes(10),

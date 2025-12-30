@@ -1,6 +1,7 @@
 using BarnManagement.Core.DTOs;
 using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Enums;
 using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -58,11 +59,11 @@ public class AnimalService : IAnimalService
             // Geri satış fiyatını hesapla (satın alma fiyatının %80'i)
             var sellPrice = request.PurchasePrice * 0.8m;
 
-            int lifeSpanYears = request.Species.ToLower() switch
+            int lifeSpanYears = request.Species switch
             {
-                "cow" or "inek" => 20,
-                "sheep" or "koyun" => 15,
-                "chicken" or "tavuk" => 10,
+                AnimalSpecies.Cow => 20,
+                AnimalSpecies.Sheep => 15,
+                AnimalSpecies.Chicken => 10,
                 _ => 10 // Varsayılan
             };
 
@@ -165,10 +166,16 @@ public class AnimalService : IAnimalService
         return animals.Select(MapToDto);
     }
 
-    public async Task<AnimalDto?> GetAnimalByIdAsync(Guid animalId)
+    public async Task<AnimalDto?> GetAnimalByIdAsync(Guid animalId, Guid userId)
     {
-        var animal = await _context.Animals.FindAsync(animalId);
-        if (animal == null) return null;
+        var animal = await _context.Animals
+            .Include(a => a.Farm)
+            .FirstOrDefaultAsync(a => a.Id == animalId);
+
+        if (animal == null || animal.Farm?.OwnerId != userId)
+        {
+            return null;
+        }
 
         return MapToDto(animal);
     }

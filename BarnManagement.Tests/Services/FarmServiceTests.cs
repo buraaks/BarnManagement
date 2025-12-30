@@ -99,5 +99,27 @@ namespace BarnManagement.Tests.Services
             var deletedFarm = await context.Farms.FindAsync(farm.Id);
             deletedFarm.Should().BeNull();
         }
+
+        [Fact]
+        public async Task GetFarmByIdAsync_ShouldReturnNull_IfNotOwnedByUser()
+        {
+            // Arrange
+            using var context = _fixture.CreateContext();
+            var farmService = new FarmService(context);
+
+            var ownerId = Guid.NewGuid();
+            var thiefId = Guid.NewGuid();
+            var user = new User { Id = ownerId, Email = "owner_secure@test.com", Username = "owner_secure", PasswordHash = new byte[0] };
+            context.Users.Add(user);
+            var farm = new Farm { Id = Guid.NewGuid(), Name = "Secure Farm", OwnerId = ownerId };
+            context.Farms.Add(farm);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await farmService.GetFarmByIdAsync(farm.Id, thiefId);
+
+            // Assert
+            result.Should().BeNull();
+        }
     }
 }

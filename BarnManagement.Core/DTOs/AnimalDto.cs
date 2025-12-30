@@ -1,9 +1,11 @@
+using BarnManagement.Core.Enums;
+
 namespace BarnManagement.Core.DTOs;
 
 public record AnimalDto(
     Guid Id,
     Guid FarmId,
-    string Species,
+    AnimalSpecies Species,
     string Name,
     DateTime BirthDate,
     int LifeSpanDays,

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BarnManagement.Core.Enums;
 
 namespace BarnManagement.Core.Entities;
 
@@ -9,7 +10,7 @@ public partial class Animal
 
     public Guid FarmId { get; set; }
 
-    public string Species { get; set; } = null!;
+    public AnimalSpecies Species { get; set; }
 
     public string Name { get; set; } = null!;
 

@@ -38,7 +38,7 @@ public class AuthService : IAuthService
         
         // Sadelik açısından geçerlilik süresi şimdilik üreteç içinde sabitlenmiştir.
         // Gerçek bir senaryoda bu süreyi üreteçten veya yapılandırmadan alırdık.
-        return new AuthResponse(token, DateTime.UtcNow.AddMinutes(60)); 
+        return new AuthResponse(token, DateTimeOffset.UtcNow.AddMinutes(60)); 
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -76,6 +76,6 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         var token = _jwtTokenGenerator.GenerateToken(user);
-        return new AuthResponse(token, DateTime.UtcNow.AddMinutes(60));
+        return new AuthResponse(token, DateTimeOffset.UtcNow.AddMinutes(60));
     }
 }

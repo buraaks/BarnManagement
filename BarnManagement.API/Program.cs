@@ -6,6 +6,7 @@ using BarnManagement.Business.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using Serilog;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -17,8 +18,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-// Controller servisleri ekleniyor (API endpoint'lerini yönetmek için).
-builder.Services.AddControllers();
+// Controller servisleri ekleniyor ve Enum'ların string olarak serileştirilmesi sağlanıyor.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // OpenAPI/Swagger desteği ekleniyor (API dökümantasyonu için).
 builder.Services.AddEndpointsApiExplorer();

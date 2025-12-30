@@ -109,10 +109,16 @@ public class ProductService : IProductService
         return products.Select(MapToDto);
     }
 
-    public async Task<ProductDto?> GetProductByIdAsync(Guid productId)
+    public async Task<ProductDto?> GetProductByIdAsync(Guid productId, Guid userId)
     {
-        var product = await _context.Products.FindAsync(productId);
-        if (product == null) return null;
+        var product = await _context.Products
+            .Include(p => p.Farm)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product == null || product.Farm?.OwnerId != userId)
+        {
+            return null;
+        }
 
         return MapToDto(product);
     }

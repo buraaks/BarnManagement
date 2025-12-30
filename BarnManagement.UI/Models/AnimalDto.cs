@@ -3,7 +3,7 @@ namespace BarnManagement.UI.Models;
 public record AnimalDto(
     Guid Id,
     Guid FarmId,
-    string Species,
+    AnimalSpecies Species,
     string Name,
     DateTime BirthDate,
     int LifeSpanDays,

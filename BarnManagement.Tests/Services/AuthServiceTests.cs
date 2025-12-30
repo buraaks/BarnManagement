@@ -69,7 +69,7 @@ namespace BarnManagement.Tests.Services
 
             // Act & Assert
             await authService.Invoking(s => s.RegisterAsync(request))
-                .Should().ThrowAsync<Exception>().WithMessage("Email already exists");
+                .Should().ThrowAsync<Exception>().WithMessage("*zaten kullanımda*");
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace BarnManagement.Tests.Services
 
             // Act & Assert
             await authService.Invoking(s => s.LoginAsync(request))
-                .Should().ThrowAsync<Exception>().WithMessage("Invalid credentials");
+                .Should().ThrowAsync<Exception>().WithMessage("*hatalı*");
         }
     }
 }

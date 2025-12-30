@@ -1,5 +1,6 @@
 using BarnManagement.Core.Entities;
 using BarnManagement.Core.Interfaces;
+using BarnManagement.Core.Enums;
 using BarnManagement.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,13 +102,13 @@ public class ProductionWorker : BackgroundService
         }
     }
 
-    private string GetProductType(string species)
+    private string GetProductType(AnimalSpecies species)
     {
-        return species.ToLower() switch
+        return species switch
         {
-            "cow" or "inek" => "Milk",
-            "chicken" or "tavuk" => "Egg",
-            "sheep" or "koyun" => "Wool",
+            AnimalSpecies.Cow => "Milk",
+            AnimalSpecies.Chicken => "Egg",
+            AnimalSpecies.Sheep => "Wool",
             _ => "Unknown"
         };
     }

@@ -97,5 +97,38 @@ namespace BarnManagement.Tests.Services
             var remainingProducts = context.Products.Where(p => p.FarmId == farm.Id);
             remainingProducts.Should().BeEmpty();
         }
+
+        [Fact]
+        public async Task GetProductByIdAsync_ShouldReturnNull_IfNotOwnedByUser()
+        {
+            // Arrange
+            using var context = _fixture.CreateContext();
+            var productService = new ProductService(context, _loggerMock.Object);
+
+            var ownerId = Guid.NewGuid();
+            var thiefId = Guid.NewGuid();
+            var user = new User { Id = ownerId, Email = "prod_owner@test.com", Username = "prodowner", PasswordHash = new byte[0] };
+            context.Users.Add(user);
+            
+            var farm = new Farm { Id = Guid.NewGuid(), Name = "Secure Farm", OwnerId = ownerId };
+            var product = new Product
+            {
+                Id = Guid.NewGuid(),
+                FarmId = farm.Id,
+                ProductType = "Gold Egg",
+                Quantity = 1,
+                Farm = farm
+            };
+
+            context.Farms.Add(farm);
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await productService.GetProductByIdAsync(product.Id, thiefId);
+
+            // Assert
+            result.Should().BeNull();
+        }
     }
 }

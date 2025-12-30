@@ -37,10 +37,12 @@ public class FarmService : IFarmService
             .ToListAsync();
     }
 
-    public async Task<FarmDto?> GetFarmByIdAsync(Guid farmId)
+    public async Task<FarmDto?> GetFarmByIdAsync(Guid farmId, Guid ownerId)
     {
         var farm = await _context.Farms.FindAsync(farmId);
-        if (farm == null) return null;
+        
+        // Çiftlik bulunamadı veya kullanıcıya ait değil
+        if (farm == null || farm.OwnerId != ownerId) return null;
 
         return new FarmDto(farm.Id, farm.Name, farm.OwnerId);
     }

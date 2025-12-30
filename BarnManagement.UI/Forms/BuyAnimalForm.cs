@@ -18,9 +18,7 @@ namespace BarnManagement.UI.Forms
 
         private void InitializeAnimalTypes()
         {
-            animalTypeComboBox.Items.Add("Chicken");
-            animalTypeComboBox.Items.Add("Cow");
-            animalTypeComboBox.Items.Add("Sheep");
+            animalTypeComboBox.DataSource = Enum.GetValues(typeof(AnimalSpecies));
             animalTypeComboBox.SelectedIndex = 0;
         }
 
@@ -31,32 +29,31 @@ namespace BarnManagement.UI.Forms
 
         private void UpdatePrice()
         {
-            string? selectedType = animalTypeComboBox.SelectedItem?.ToString();
-            if (!string.IsNullOrEmpty(selectedType))
+            if (animalTypeComboBox.SelectedItem is AnimalSpecies selectedType)
             {
                 decimal price = GetAnimalPrice(selectedType);
                 priceLabel.Text = price.ToString("C");
             }
         }
 
-        private decimal GetAnimalPrice(string? animalType)
+        private decimal GetAnimalPrice(AnimalSpecies animalType)
         {
             return animalType switch
             {
-                "Chicken" => 50m,
-                "Cow" => 400m,
-                "Sheep" => 200m,
+                AnimalSpecies.Chicken => 50m,
+                AnimalSpecies.Cow => 400m,
+                AnimalSpecies.Sheep => 200m,
                 _ => 0m
             };
         }
 
-        private int GetProductionInterval(string? animalType)
+        private int GetProductionInterval(AnimalSpecies animalType)
         {
             return animalType switch
             {
-                "Chicken" => 10,     
-                "Cow" => 15,      
-                "Sheep" => 20,       
+                AnimalSpecies.Chicken => 10,     
+                AnimalSpecies.Cow => 15,      
+                AnimalSpecies.Sheep => 20,       
                 _ => 20
             };
         }
@@ -64,18 +61,17 @@ namespace BarnManagement.UI.Forms
         private async void BuyButton_Click(object? sender, EventArgs e)
         {
             string? animalName = animalNameTextBox.Text?.Trim();
-            string? animalType = animalTypeComboBox.SelectedItem?.ToString();
-
-            if (string.IsNullOrEmpty(animalName))
+            
+            if (animalTypeComboBox.SelectedItem is not AnimalSpecies animalType)
             {
-                MessageBox.Show("Lütfen hayvan adı girin!", "Uyarı",
+                MessageBox.Show("Lütfen hayvan türü seçin!", "Uyarı",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrEmpty(animalType))
+            if (string.IsNullOrEmpty(animalName))
             {
-                MessageBox.Show("Lütfen hayvan türü seçin!", "Uyarı",
+                MessageBox.Show("Lütfen hayvan adı girin!", "Uyarı",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

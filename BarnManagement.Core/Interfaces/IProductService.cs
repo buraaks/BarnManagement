@@ -6,6 +6,6 @@ public interface IProductService
 {
     Task<ProductDto?> SellProductAsync(Guid productId, int quantity, Guid userId);
     Task<IEnumerable<ProductDto>> GetFarmProductsAsync(Guid farmId, Guid userId);
-    Task<ProductDto?> GetProductByIdAsync(Guid productId);
+    Task<ProductDto?> GetProductByIdAsync(Guid productId, Guid userId);
     Task<decimal> SellAllProductsAsync(Guid farmId, Guid userId);
 }

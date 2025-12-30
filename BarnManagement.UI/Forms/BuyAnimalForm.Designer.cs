@@ -60,7 +60,7 @@ namespace BarnManagement.UI.Forms
             this.priceLabel = new System.Windows.Forms.Label();
             this.priceLabel.Location = new System.Drawing.Point(130, 100);
             this.priceLabel.Size = new System.Drawing.Size(100, 20);
-            this.priceLabel.Text = GetAnimalPrice("Chicken").ToString("C");
+            this.priceLabel.Text = GetAnimalPrice(Models.AnimalSpecies.Chicken).ToString("C");
             this.priceLabel.Font = new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Bold);
 
 

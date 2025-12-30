@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BarnManagement.UI.Services;
 
@@ -24,6 +25,7 @@ public class BarnManagementApiClient
             BaseAddress = new Uri(apiBaseUrl)
         };
         _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
     public void SetAuthToken(string token)

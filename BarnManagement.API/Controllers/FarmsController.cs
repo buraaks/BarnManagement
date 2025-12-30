@@ -43,8 +43,9 @@ public class FarmsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<FarmDto>> GetFarmById(Guid id)
     {
-        var farm = await _farmService.GetFarmByIdAsync(id);
-        if (farm == null) return NotFound("Çiftlik bulunamadı.");
+        var userId = GetUserId();
+        var farm = await _farmService.GetFarmByIdAsync(id, userId);
+        if (farm == null) return NotFound("Çiftlik bulunamadı veya bu çiftliğe erişim yetkiniz yok.");
         return Ok(farm);
     }
 

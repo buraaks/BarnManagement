@@ -1,4 +1,5 @@
 using BarnManagement.Core.DTOs;
+using BarnManagement.Core.Enums;
 using BarnManagement.Tests.Integration;
 using FluentAssertions;
 using System;
@@ -7,6 +8,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,11 +18,14 @@ namespace BarnManagement.Tests.Integration
     public class AnimalsControllerIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
     {
         private readonly CustomWebApplicationFactory<Program> _factory;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public AnimalsControllerIntegrationTests(CustomWebApplicationFactory<Program> factory)
         {
             _factory = factory;
             _factory.InitializeDatabase();
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
         private async Task<(HttpClient client, string token, Guid farmId)> SetupUserAndFarmAsync()
@@ -40,7 +46,7 @@ namespace BarnManagement.Tests.Integration
 
             // Get default farm
             var farmsRes = await client.GetAsync("/api/farms");
-            var farms = await farmsRes.Content.ReadFromJsonAsync<List<FarmDto>>();
+            var farms = await farmsRes.Content.ReadFromJsonAsync<List<FarmDto>>(_jsonOptions);
             
             return (client, authRes.Token, farms![0].Id);
         }
@@ -50,16 +56,16 @@ namespace BarnManagement.Tests.Integration
         {
             // Arrange
             var (client, _, farmId) = await SetupUserAndFarmAsync();
-            var request = new BuyAnimalRequest("Cow", "Daisy", 500, 300); // 500 para, 300 saniye interval
+            var request = new BuyAnimalRequest(AnimalSpecies.Cow, "Daisy", 500, 300); // 500 para, 300 saniye interval
 
             // Act
             var response = await client.PostAsJsonAsync($"/api/farms/{farmId}/animals/buy", request);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Created);
-            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>();
+            var animal = await response.Content.ReadFromJsonAsync<AnimalDto>(_jsonOptions);
             animal.Should().NotBeNull();
-            animal!.Species.Should().Be("Cow");
+            animal!.Species.Should().Be(AnimalSpecies.Cow);
             animal.PurchasePrice.Should().Be(500);
         }
 
@@ -70,7 +76,7 @@ namespace BarnManagement.Tests.Integration
             var (client, _, farmId) = await SetupUserAndFarmAsync();
             
             // Önce bir hayvan alalım
-            var buyReq = new BuyAnimalRequest("Chicken", "Chick", 100, 60);
+            var buyReq = new BuyAnimalRequest(AnimalSpecies.Chicken, "Chick", 100, 60);
             await client.PostAsJsonAsync($"/api/farms/{farmId}/animals/buy", buyReq);
 
             // Act
@@ -78,9 +84,9 @@ namespace BarnManagement.Tests.Integration
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var animals = await response.Content.ReadFromJsonAsync<List<AnimalDto>>();
+            var animals = await response.Content.ReadFromJsonAsync<List<AnimalDto>>(_jsonOptions);
             animals.Should().NotBeNull();
-            animals.Should().Contain(a => a.Species == "Chicken");
+            animals.Should().Contain(a => a.Species == AnimalSpecies.Chicken);
         }
     }
 }

@@ -1,5 +1,7 @@
+namespace BarnManagement.UI.Models;
+
 public record BuyAnimalRequest(
-    string Species,
+    AnimalSpecies Species,
     string Name,
     decimal PurchasePrice,
     int ProductionInterval

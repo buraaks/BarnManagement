@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using BarnManagement.Core.Entities;
+using BarnManagement.Core.Enums;
 
 namespace BarnManagement.DataAccess.Entities;
 
@@ -27,7 +28,9 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Animals__3214EC0714C678DB");
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Species).HasMaxLength(100);
+            entity.Property(e => e.Species)
+                .HasMaxLength(100)
+                .HasConversion<string>();
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.PurchasePrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.SellPrice).HasColumnType("decimal(18, 2)");
