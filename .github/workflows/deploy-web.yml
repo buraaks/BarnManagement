@@ -20,10 +20,10 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-          cache-dependency-path: barnmanagement-web/package-lock.json
+          cache-dependency-path: BarnManagement.Web/package-lock.json
 
       - name: Install and Build 🔧
-        working-directory: barnmanagement-web
+        working-directory: BarnManagement.Web
         run: |
           npm install
           npm run build
@@ -31,5 +31,5 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: barnmanagement-web/dist
+          folder: BarnManagement.Web/dist
           branch: gh-pages # Dağıtım yapılacak dal

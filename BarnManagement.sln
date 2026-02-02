@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarnManagement.UI", "BarnMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarnManagement.Tests", "BarnManagement.Tests\BarnManagement.Tests.csproj", "{86A27F0F-0AE8-4EAC-9D42-C55019058566}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "BarnManagement.Web", "BarnManagement.Web\BarnManagement.Web.esproj", "{2DC6C08C-374A-417F-85B8-A37040F58B18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,12 @@ Global
 		{86A27F0F-0AE8-4EAC-9D42-C55019058566}.Release|x64.Build.0 = Release|Any CPU
 		{86A27F0F-0AE8-4EAC-9D42-C55019058566}.Release|x86.ActiveCfg = Release|Any CPU
 		{86A27F0F-0AE8-4EAC-9D42-C55019058566}.Release|x86.Build.0 = Release|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Release|x64.ActiveCfg = Release|Any CPU
+		{2DC6C08C-374A-417F-85B8-A37040F58B18}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
