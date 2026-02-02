@@ -1,63 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barn Management | Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barn Management | Professional Farm Sim</title>
+    <link rel="stylesheet" href="css/style.css?v=3" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="main-container">
-        <header>
-            <h1>Farm Simulation</h1>
-            <div id="cashDisplay" class="cash-card">Cash: 0.00 TL</div>
-        </header>
-
-        <div class="game-layout">
-            <div class="grids-section">
-                <div class="grid-container">
-                    <div class="grid-header">Animals</div>
-                    <table id="animalsTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Age</th>
-                                <th>Type</th>
-                                <th>Production Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="grid-container">
-                    <div class="grid-header">Storage / Products</div>
-                    <table id="productsTable">
-                        <thead>
-                            <tr>
-                                <th>Product Type</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="controls-section">
-                <button class="btn" onclick="buyAnimal()">Buy Animal</button>
-                <button class="btn" onclick="sellAnimal()">Sell Animal</button>
-                <button class="btn" onclick="sellProducts()">Sell Products</button>
-                <button id="resetBtn" class="btn btn-danger" onclick="resetGame()">Reset Game</button>
-            </div>
+      <header>
+        <div class="brand">
+          <h1><i class="fa-solid fa-cow"></i> Barn Management</h1>
+          <p style="color: var(--text-muted); font-size: 0.85rem">
+            Professional Simulation Dashboard
+          </p>
         </div>
+        <div id="cashDisplay" class="cash-card">
+          <i class="fa-solid fa-wallet"></i> 0.00 TL
+        </div>
+      </header>
+
+      <div class="game-layout">
+        <div class="grids-section">
+          <div class="grid-container">
+            <div class="grid-header"><i class="fa-solid fa-list-check"></i> Animals</div>
+            <table id="animalsTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Age</th>
+                  <th>Type</th>
+                  <th>Production Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Data will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-container">
+            <div class="grid-header"><i class="fa-solid fa-warehouse"></i> Storage / Products</div>
+            <table id="productsTable">
+              <thead>
+                <tr>
+                  <th>Product Type</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Data will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="controls-section">
+          <button class="btn" onclick="buyAnimal()"><i class="fa-solid fa-cart-plus"></i> Buy Animal</button>
+          <button class="btn" onclick="sellAnimal()"><i class="fa-solid fa-money-bill-transfer"></i> Sell Animal</button>
+          <button class="btn" onclick="sellProducts()"><i class="fa-solid fa-box-open"></i> Sell Products</button>
+          <button id="resetBtn" class="btn btn-danger" onclick="resetGame()">
+            <i class="fa-solid fa-rotate-left"></i> Reset Game
+          </button>
+        </div>
+      </div>
     </div>
-    <script src="js/app.js"></script>
-</body>
+    <!-- Buy Animal Modal (WinForms Style) -->
+    <div id="buyAnimalModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Buy Animal</span>
+          <button class="close-btn" onclick="closeBuyModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Animal Name:</label>
+            <input type="text" id="newAnimalName" />
+          </div>
+          <div class="form-group">
+            <label>Animal Type:</label>
+            <select id="newAnimalType" onchange="updatePriceLabel()">
+              <option value="Cow">Cow</option>
+              <option value="Sheep">Sheep</option>
+              <option value="Chicken">Chicken</option>
+            </select>
+          </div>
+          <div class="price-info">
+            <span>Price: </span>
+            <span id="buyPriceLabel" style="font-weight: bold">0.00 TL</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="win-btn btn-success" onclick="confirmBuyAnimal()">
+            Buy
+          </button>
+          <button class="win-btn btn-danger" onclick="closeBuyModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generic Confirmation/Message Modal -->
+    <div id="messageModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span id="msgModalTitle">Confirm</span>
+          <button class="close-btn" onclick="closeMsgModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="msgModalContent" style="margin: 0"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="msgModalOkBtn" class="win-btn btn-success">OK</button>
+          <button
+            id="msgModalCancelBtn"
+            class="win-btn btn-danger"
+            onclick="closeMsgModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/app.js?v=3"></script>
+  </body>
 </html>
