@@ -6,5 +6,7 @@
     <!-- Allows the build step to generate subsequent dist folder -->
     <BuildCommand>npm run build</BuildCommand>
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
+    <!-- Ensure the browser is launched on start -->
+    <ShouldRunNpmInstall>true</ShouldRunNpmInstall>
   </PropertyGroup>
 </Project>
