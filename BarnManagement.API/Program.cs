@@ -150,6 +150,10 @@ app.UseHttpsRedirection();
 // CORS Middleware'ini devreye al (Authentication'dan önce olmalı)
 app.UseCors("AllowVueApp");
 
+// Statik dosyaları (HTML, CSS, JS) destekle
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Kimlik doğrulama ve yetkilendirme middleware'lerini kullan.
 app.UseAuthentication();
 app.UseAuthorization();

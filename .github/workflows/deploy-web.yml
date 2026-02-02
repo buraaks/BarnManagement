@@ -15,21 +15,8 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      - name: Setup Node ⚙️
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: "npm"
-          cache-dependency-path: BarnManagement.Web/package-lock.json
-
-      - name: Install and Build 🔧
-        working-directory: BarnManagement.Web
-        run: |
-          npm install
-          npm run build
-
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: BarnManagement.Web/dist
-          branch: gh-pages # Dağıtım yapılacak dal
+          folder: BarnManagement.API/wwwroot
+          branch: gh-pages
