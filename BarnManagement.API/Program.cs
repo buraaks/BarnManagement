@@ -25,6 +25,19 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// CORS Politikası: Vue.js uygulamalarının erişimine izin ver
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowVueApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173", "http://localhost:8080") // Vite ve Vue CLI varsayılan portları
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        });
+});
+
 // OpenAPI/Swagger desteği ekleniyor (API dökümantasyonu için).
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -133,6 +146,9 @@ app.UseSerilogRequestLogging();
 
 // HTTP isteklerini HTTPS'e yönlendir.
 app.UseHttpsRedirection();
+
+// CORS Middleware'ini devreye al (Authentication'dan önce olmalı)
+app.UseCors("AllowVueApp");
 
 // Kimlik doğrulama ve yetkilendirme middleware'lerini kullan.
 app.UseAuthentication();
