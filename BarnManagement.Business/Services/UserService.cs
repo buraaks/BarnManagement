@@ -54,7 +54,7 @@ public class UserService : IUserService
         var user = await _context.Users.FindAsync(userId);
         if (user != null)
         {
-            user.Balance = 1000m;
+            user.Balance = 5000m;
         }
 
         // 5. Varsayılan Çiftlik Oluştur

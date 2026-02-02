@@ -8,8 +8,8 @@ public class MarketService : IMarketService
     private readonly ILogger<MarketService> _logger;
     private readonly Dictionary<string, decimal> _basePrices = new()
     {
-        { "Milk", 15.0m },
-        { "Egg", 2.5m },
+        { "Milk", 80.0m },
+        { "Egg", 10.0m },
         { "Wool", 50.0m }
     };
 

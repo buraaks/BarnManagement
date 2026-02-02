@@ -58,7 +58,7 @@ public class AuthService : IAuthService
             Email = request.Email,
             Username = request.Username,
             PasswordHash = passwordHashBytes,
-            Balance = 1000,
+            Balance = 5000m,
             Farms = new List<Farm>()
         };
 
