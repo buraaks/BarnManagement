@@ -54,7 +54,8 @@ namespace BarnManagement.Tests.Services
             result.PurchasePrice.Should().Be(500);
 
             var updatedUser = await context.Users.FindAsync(userId);
-            updatedUser.Balance.Should().Be(1500); // 2000 - 500
+            updatedUser.Should().NotBeNull();
+            updatedUser!.Balance.Should().Be(1500); // 2000 - 500
 
             var animal = await context.Animals.FindAsync(result.Id);
             animal.Should().NotBeNull();
@@ -117,7 +118,8 @@ namespace BarnManagement.Tests.Services
             result.Should().NotBeNull();
             
             var updatedUser = await context.Users.FindAsync(userId);
-            updatedUser.Balance.Should().Be(400); // 100 + 300
+            updatedUser.Should().NotBeNull();
+            updatedUser!.Balance.Should().Be(400); // 100 + 300
 
             var deletedAnimal = await context.Animals.FindAsync(animal.Id);
             deletedAnimal.Should().BeNull();

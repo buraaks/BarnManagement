@@ -25,13 +25,13 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// CORS Politikası: Vue.js uygulamalarının erişimine izin ver
+// CORS Politikası: Nuxt ve Vue.js uygulamalarının erişimine izin ver
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173", "http://localhost:8080") // Vite ve Vue CLI varsayılan portları
+            policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8080")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials();

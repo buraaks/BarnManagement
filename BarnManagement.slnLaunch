@@ -1,0 +1,12 @@
+[
+  {
+    "Name": "API Debug (Stable)",
+    "Projects": [
+      {
+        "Path": "BarnManagement.API\\BarnManagement.API.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  }
+]

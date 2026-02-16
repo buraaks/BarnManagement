@@ -74,7 +74,8 @@ namespace BarnManagement.Tests.Services
             result.Name.Should().Be("Updated Name");
 
             var updatedFarm = await context.Farms.FindAsync(farm.Id);
-            updatedFarm.Name.Should().Be("Updated Name");
+            updatedFarm.Should().NotBeNull();
+            updatedFarm!.Name.Should().Be("Updated Name");
         }
 
         [Fact]

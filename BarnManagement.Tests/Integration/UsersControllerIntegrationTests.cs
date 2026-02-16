@@ -68,7 +68,7 @@ namespace BarnManagement.Tests.Integration
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = await response.Content.ReadFromJsonAsync<Dictionary<string, decimal>>();
-            result!["balance"].Should().Be(1000); // Varsayılan başlangıç bakiyesi
+            result!["balance"].Should().Be(5000); // Varsayılan başlangıç bakiyesi
         }
 
         [Fact]

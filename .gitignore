@@ -482,3 +482,14 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Nuxt build output
+.nuxt/
+.output/
+dist/
+
+# Cursor workspace metadata
+.cursor/
+
+# Visual Studio personal launch profile
+*.slnLaunch.user

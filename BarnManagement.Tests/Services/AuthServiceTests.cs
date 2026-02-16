@@ -46,7 +46,7 @@ namespace BarnManagement.Tests.Services
             var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
             user.Should().NotBeNull();
             user.Username.Should().Be(username);
-            user.Balance.Should().Be(1000);
+            user.Balance.Should().Be(5000);
 
             var farm = await context.Farms.FirstOrDefaultAsync(f => f.OwnerId == user.Id);
             farm.Should().NotBeNull();

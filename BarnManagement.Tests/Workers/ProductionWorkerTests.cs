@@ -103,11 +103,13 @@ namespace BarnManagement.Tests.Workers
 
             // 2. Tavuğun bir sonraki üretim zamanı güncellenmiş mi?
             var updatedChicken = await context.Animals.FindAsync(readyChicken.Id);
-            updatedChicken.NextProductionAt.Should().BeAfter(now); // Geleceğe atılmış olmalı (Now + Interval)
+            updatedChicken.Should().NotBeNull();
+            updatedChicken!.NextProductionAt.Should().BeAfter(now); // Geleceğe atılmış olmalı (Now + Interval)
             
             // 3. İnek işlem görmemeli
             var updatedCow = await context.Animals.FindAsync(waitingCow.Id);
-            updatedCow.NextProductionAt.Should().Be(waitingCow.NextProductionAt); // Değişmemeli
+            updatedCow.Should().NotBeNull();
+            updatedCow!.NextProductionAt.Should().Be(waitingCow.NextProductionAt); // Değişmemeli
         }
     }
 

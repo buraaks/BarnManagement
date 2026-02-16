@@ -60,7 +60,8 @@ namespace BarnManagement.Tests.Services
             result.Should().NotBeNull();
             
             var updatedUser = await context.Users.FindAsync(userId);
-            updatedUser.Balance.Should().Be(150); // 100 + (10 * 5)
+            updatedUser.Should().NotBeNull();
+            updatedUser!.Balance.Should().Be(150); // 100 + (10 * 5)
 
             var deletedProduct = await context.Products.FindAsync(product.Id);
             deletedProduct.Should().BeNull();
@@ -92,7 +93,8 @@ namespace BarnManagement.Tests.Services
             totalEarnings.Should().Be(120); // (2*50) + (10*2)
             
             var updatedUser = await context.Users.FindAsync(userId);
-            updatedUser.Balance.Should().Be(120);
+            updatedUser.Should().NotBeNull();
+            updatedUser!.Balance.Should().Be(120);
 
             var remainingProducts = context.Products.Where(p => p.FarmId == farm.Id);
             remainingProducts.Should().BeEmpty();
