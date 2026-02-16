@@ -19,6 +19,7 @@ public class FarmService : IFarmService
     {
         var farm = new Farm
         {
+            Id = Guid.NewGuid(),
             Name = request.Name,
             OwnerId = ownerId
         };

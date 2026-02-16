@@ -14,13 +14,18 @@ namespace BarnManagement.Tests.Integration
     public class CustomWebApplicationFactory<TProgram>
         : WebApplicationFactory<TProgram> where TProgram : class
     {
+        private static readonly string TestConnectionString =
+            Environment.GetEnvironmentVariable("TEST_SQLSERVER_CONNECTION")
+            ?? "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:DefaultConnection"] = "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;",
+                    ["Database:Provider"] = "SqlServer",
+                    ["ConnectionStrings:DefaultConnection"] = TestConnectionString,
                     ["JwtSettings:Secret"] = "integration_test_secret_key_very_long_123!",
                     ["JwtSettings:Issuer"] = "IntegrationIssuer",
                     ["JwtSettings:Audience"] = "IntegrationAudience",
@@ -41,7 +46,7 @@ namespace BarnManagement.Tests.Integration
                     services.Remove(descriptor);
                 }
 
-                var connectionString = "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
+                var connectionString = TestConnectionString;
 
                 services.AddDbContext<AppDbContext>(options =>
                 {
@@ -56,9 +61,8 @@ namespace BarnManagement.Tests.Integration
             {
                 var scopedServices = scope.ServiceProvider;
                 var db = scopedServices.GetRequiredService<AppDbContext>();
-                
-                db.Database.ExecuteSqlRaw("DELETE FROM Products; DELETE FROM Animals; DELETE FROM Farms; DELETE FROM Users;");
                 db.Database.EnsureCreated();
+                db.Database.ExecuteSqlRaw("DELETE FROM Products; DELETE FROM Animals; DELETE FROM Farms; DELETE FROM Users;");
             }
         }
     }

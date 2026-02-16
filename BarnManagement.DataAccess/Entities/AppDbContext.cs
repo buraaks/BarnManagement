@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using BarnManagement.Core.Entities;
@@ -27,7 +27,6 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Animal>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Animals__3214EC0714C678DB");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Species)
                 .HasMaxLength(100)
                 .HasConversion<string>();
@@ -46,7 +45,6 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Farm>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Farms__3214EC0764F68B70");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Name).HasMaxLength(255);
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Farms)
@@ -58,7 +56,6 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Products__3214EC0786C019E2");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.ProductType).HasMaxLength(100);
             entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
 
@@ -74,7 +71,6 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Users__3214EC0789DD88B2");
             entity.HasIndex(e => e.Email, "UQ__Users__A9D1053481A44601").IsUnique();
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Balance).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Username).HasMaxLength(100);

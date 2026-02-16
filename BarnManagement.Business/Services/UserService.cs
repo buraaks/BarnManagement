@@ -58,7 +58,7 @@ public class UserService : IUserService
         }
 
         // 5. Varsayılan Çiftlik Oluştur
-        var defaultFarm = new Farm { OwnerId = userId, Name = "My Farm" };
+        var defaultFarm = new Farm { Id = Guid.NewGuid(), OwnerId = userId, Name = "My Farm" };
         _context.Farms.Add(defaultFarm);
         
         await _context.SaveChangesAsync();

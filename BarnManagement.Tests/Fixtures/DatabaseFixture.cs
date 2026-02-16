@@ -10,7 +10,9 @@ namespace BarnManagement.Tests.Fixtures
 {
     public class DatabaseFixture : IDisposable
     {
-        private readonly string _connectionString = "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
+        private readonly string _connectionString =
+            Environment.GetEnvironmentVariable("TEST_SQLSERVER_CONNECTION")
+            ?? "Server=JEFT;Database=BarnManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public AppDbContext CreateContext()
         {
@@ -19,6 +21,7 @@ namespace BarnManagement.Tests.Fixtures
                 .Options;
 
             var context = new AppDbContext(options);
+            context.Database.EnsureCreated();
             ClearDatabase(context);
             return context;
         }

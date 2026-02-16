@@ -90,9 +90,30 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>();
 
-// Veritabanı Bağlantısı (Entity Framework Core): Bağlantı dizesi 'appsettings.json'dan alınır.
+// Veritabanı Bağlantısı (Entity Framework Core): Provider ve bağlantı dizesi yapılandırmadan alınır.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("DefaultConnection is not configured.");
+var databaseProvider = builder.Configuration["Database:Provider"] ?? "MySql";
+var mySqlServerVersionSetting = builder.Configuration["Database:MySqlServerVersion"] ?? "8.0.36";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (databaseProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlServer(connectionString);
+        return;
+    }
+
+    if (!Version.TryParse(mySqlServerVersionSetting, out var mySqlServerVersion))
+    {
+        throw new InvalidOperationException("Database:MySqlServerVersion must be in major.minor.patch format.");
+    }
+
+    options.UseMySql(
+        connectionString,
+        new MySqlServerVersion(mySqlServerVersion),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure());
+});
 
 // Kimlik Doğrulama (Authentication) Yapılandırması: JWT (JSON Web Token) kullanılır.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

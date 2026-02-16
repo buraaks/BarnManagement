@@ -12,34 +12,30 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BarnManagement.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251209064310_RemoveProductSoldFields")]
-    partial class RemoveProductSoldFields
+    [Migration("20260216141123_InitialMySql")]
+    partial class InitialMySql
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("ProductVersion", "9.0.13")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("BarnManagement.Core.Entities.Animal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("BirthDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("FarmId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsSold")
-                        .HasColumnType("bit");
+                        .HasColumnType("char(36)");
 
                     b.Property<int>("LifeSpanDays")
                         .HasColumnType("int");
@@ -47,10 +43,10 @@ namespace BarnManagement.DataAccess.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("NextProductionAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("ProductionInterval")
                         .HasColumnType("int");
@@ -64,12 +60,12 @@ namespace BarnManagement.DataAccess.Migrations
                     b.Property<string>("Species")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id")
                         .HasName("PK__Animals__3214EC0714C678DB");
 
-                    b.HasIndex("FarmId");
+                    b.HasIndex(new[] { "FarmId" }, "IX_Animals_FarmId");
 
                     b.ToTable("Animals");
                 });
@@ -78,16 +74,15 @@ namespace BarnManagement.DataAccess.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id")
                         .HasName("PK__Farms__3214EC0764F68B70");
@@ -101,19 +96,21 @@ namespace BarnManagement.DataAccess.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
+                        .HasColumnType("char(36)");
 
-                    b.Property<Guid>("AnimalId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid>("FarmId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("ProducedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("ProductType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("decimal(18, 2)");
@@ -121,7 +118,7 @@ namespace BarnManagement.DataAccess.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Products__3214EC0786C019E2");
 
-                    b.HasIndex("AnimalId");
+                    b.HasIndex(new[] { "FarmId" }, "IX_Products_FarmId");
 
                     b.ToTable("Products");
                 });
@@ -130,8 +127,7 @@ namespace BarnManagement.DataAccess.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
+                        .HasColumnType("char(36)");
 
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18, 2)");
@@ -139,16 +135,16 @@ namespace BarnManagement.DataAccess.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("longblob");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id")
                         .HasName("PK__Users__3214EC0789DD88B2");
@@ -183,23 +179,20 @@ namespace BarnManagement.DataAccess.Migrations
 
             modelBuilder.Entity("BarnManagement.Core.Entities.Product", b =>
                 {
-                    b.HasOne("BarnManagement.Core.Entities.Animal", "Animal")
+                    b.HasOne("BarnManagement.Core.Entities.Farm", "Farm")
                         .WithMany("Products")
-                        .HasForeignKey("AnimalId")
+                        .HasForeignKey("FarmId")
                         .IsRequired()
-                        .HasConstraintName("FK_Products_Animals");
+                        .HasConstraintName("FK_Products_Farms");
 
-                    b.Navigation("Animal");
-                });
-
-            modelBuilder.Entity("BarnManagement.Core.Entities.Animal", b =>
-                {
-                    b.Navigation("Products");
+                    b.Navigation("Farm");
                 });
 
             modelBuilder.Entity("BarnManagement.Core.Entities.Farm", b =>
                 {
                     b.Navigation("Animals");
+
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BarnManagement.Core.Entities.User", b =>

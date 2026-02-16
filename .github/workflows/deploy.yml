@@ -13,6 +13,52 @@ jobs:
       - name: Repo checkout
         uses: actions/checkout@v4
 
+      - name: Setup MySQL client
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Create database
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          PORT="${DB_PORT:-3306}"
+          mysql -h "$DB_HOST" -P "$PORT" -u "$DB_USER" -p"$DB_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;"
+
+      - name: Setup .NET SDK
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install dotnet-ef
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        run: dotnet tool install --global dotnet-ef --version 9.0.13
+
+      - name: Add .NET tools to PATH
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Run EF Core migrations
+        if: ${{ secrets.DB_HOST != '' && secrets.DB_NAME != '' && secrets.DB_USER != '' && secrets.DB_PASSWORD != '' }}
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          Database__Provider: MySql
+        run: |
+          PORT="${DB_PORT:-3306}"
+          export ConnectionStrings__DefaultConnection="Server=${DB_HOST};Port=${PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};"
+          dotnet ef database update --project BarnManagement.DataAccess/BarnManagement.DataAccess.csproj --startup-project BarnManagement.API/BarnManagement.API.csproj
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
