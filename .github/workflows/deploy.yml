@@ -29,7 +29,12 @@ jobs:
         if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
         run: |
           PORT="${DB_PORT:-3306}"
-          mysql -h "$DB_HOST" -P "$PORT" -u "$DB_USER" -p"$DB_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;"
+          if [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
+            echo "DB_HOST localhost/127.0.0.1 olamaz. GitHub runner cPanel sunucusunun local MySQL'ine erişemez. DB adımı atlanıyor."
+            exit 0
+          fi
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP --connect-timeout=15 -h "$DB_HOST" -P "$PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;"
 
       - name: Setup .NET SDK
         if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
@@ -51,6 +56,10 @@ jobs:
           Database__Provider: MySql
         run: |
           PORT="${DB_PORT:-3306}"
+          if [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
+            echo "DB_HOST localhost/127.0.0.1 oldugu icin migration adimi atlanıyor."
+            exit 0
+          fi
           export ConnectionStrings__DefaultConnection="Server=${DB_HOST};Port=${PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};"
           dotnet ef database update --project BarnManagement.DataAccess/BarnManagement.DataAccess.csproj --startup-project BarnManagement.API/BarnManagement.API.csproj
 
