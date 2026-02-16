@@ -8,60 +8,10 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
     steps:
       - name: Repo checkout
         uses: actions/checkout@v4
-
-      - name: Setup MySQL client
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-
-      - name: Create database
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        run: |
-          PORT="${DB_PORT:-3306}"
-          if [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
-            echo "DB_HOST localhost/127.0.0.1 olamaz. GitHub runner cPanel sunucusunun local MySQL'ine erişemez. DB adımı atlanıyor."
-            exit 0
-          fi
-          export MYSQL_PWD="$DB_PASSWORD"
-          mysql --protocol=TCP --connect-timeout=15 -h "$DB_HOST" -P "$PORT" -u "$DB_USER" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;"
-
-      - name: Setup .NET SDK
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Install dotnet-ef
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        run: dotnet tool install --global dotnet-ef --version 9.0.13
-
-      - name: Add .NET tools to PATH
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
-
-      - name: Run EF Core migrations
-        if: ${{ env.DB_HOST != '' && env.DB_NAME != '' && env.DB_USER != '' && env.DB_PASSWORD != '' }}
-        env:
-          Database__Provider: MySql
-        run: |
-          PORT="${DB_PORT:-3306}"
-          if [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
-            echo "DB_HOST localhost/127.0.0.1 oldugu icin migration adimi atlanıyor."
-            exit 0
-          fi
-          export ConnectionStrings__DefaultConnection="Server=${DB_HOST};Port=${PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};"
-          dotnet ef database update --project BarnManagement.DataAccess/BarnManagement.DataAccess.csproj --startup-project BarnManagement.API/BarnManagement.API.csproj
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
