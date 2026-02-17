@@ -48,54 +48,58 @@ public class AnimalService : IAnimalService
             throw new InvalidOperationException("Insufficient balance.");
         }
 
-        // Alım işlemini atomik olarak gerçekleştir
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        // Alım işlemini atomik olarak gerçekleştir (ExecutionStrategy ile uyumlu)
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Bakiyeyi düş
-            user.Balance -= request.PurchasePrice;
-            _context.Users.Update(user);
-
-            // Geri satış fiyatını hesapla (satın alma fiyatının %80'i)
-            var sellPrice = request.PurchasePrice * 0.8m;
-
-            int lifeSpanYears = request.Species switch
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                AnimalSpecies.Cow => 20,
-                AnimalSpecies.Sheep => 15,
-                AnimalSpecies.Chicken => 10,
-                _ => 10 // Varsayılan
-            };
+                // Bakiyeyi düş
+                user.Balance -= request.PurchasePrice;
+                _context.Users.Update(user);
 
-            // Yeni hayvan kaydı oluştur
-            var animal = new Animal
+                // Geri satış fiyatını hesapla (satın alma fiyatının %80'i)
+                var sellPrice = request.PurchasePrice * 0.8m;
+
+                int lifeSpanYears = request.Species switch
+                {
+                    AnimalSpecies.Cow => 20,
+                    AnimalSpecies.Sheep => 15,
+                    AnimalSpecies.Chicken => 10,
+                    _ => 10 // Varsayılan
+                };
+
+                // Yeni hayvan kaydı oluştur
+                var animal = new Animal
+                {
+                    Id = Guid.NewGuid(),
+                    FarmId = farmId,
+                    Species = request.Species,
+                    Name = request.Name,
+                    BirthDate = DateTime.UtcNow,
+                    LifeSpanDays = lifeSpanYears,
+                    ProductionInterval = request.ProductionInterval,
+                    NextProductionAt = DateTime.UtcNow.AddSeconds(request.ProductionInterval),
+                    PurchasePrice = request.PurchasePrice,
+                    SellPrice = sellPrice
+                };
+
+                _context.Animals.Add(animal);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("User {UserId} bought animal {AnimalId} ({Species}) for {Price}", userId, animal.Id, request.Species, request.PurchasePrice);
+
+                return MapToDto(animal);
+            }
+            catch (Exception ex)
             {
-                Id = Guid.NewGuid(),
-                FarmId = farmId,
-                Species = request.Species,
-                Name = request.Name,
-                BirthDate = DateTime.UtcNow,
-                LifeSpanDays = lifeSpanYears,
-                ProductionInterval = request.ProductionInterval,
-                NextProductionAt = DateTime.UtcNow.AddSeconds(request.ProductionInterval),
-                PurchasePrice = request.PurchasePrice,
-                SellPrice = sellPrice
-            };
-
-            _context.Animals.Add(animal);
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            _logger.LogInformation("User {UserId} bought animal {AnimalId} ({Species}) for {Price}", userId, animal.Id, request.Species, request.PurchasePrice);
-
-            return MapToDto(animal);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error buying animal for user {UserId}", userId);
-            throw;
-        }
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error buying animal for user {UserId}", userId);
+                throw;
+            }
+        });
     }
 
     public async Task<AnimalDto?> SellAnimalAsync(Guid animalId, Guid userId)
@@ -123,30 +127,34 @@ public class AnimalService : IAnimalService
             throw new InvalidOperationException("User not found.");
         }
 
-        // Satış işlemini atomik olarak gerçekleştir
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        // Satış işlemini atomik olarak gerçekleştir (ExecutionStrategy ile uyumlu)
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Bakiyeye satış fiyatını ekle
-            user.Balance += animal.SellPrice;
-            _context.Users.Update(user);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Bakiyeye satış fiyatını ekle
+                user.Balance += animal.SellPrice;
+                _context.Users.Update(user);
 
-            // Hayvan kaydını sil
-            _context.Animals.Remove(animal);
+                // Hayvan kaydını sil
+                _context.Animals.Remove(animal);
 
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-            _logger.LogInformation("User {UserId} sold animal {AnimalId} ({Species}) for {Price}", userId, animalId, animal.Species, animal.SellPrice);
+                _logger.LogInformation("User {UserId} sold animal {AnimalId} ({Species}) for {Price}", userId, animalId, animal.Species, animal.SellPrice);
 
-            return MapToDto(animal);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error selling animal {AnimalId}", animalId);
-            throw;
-        }
+                return MapToDto(animal);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error selling animal {AnimalId}", animalId);
+                throw;
+            }
+        });
     }
 
     public async Task<IEnumerable<AnimalDto>> GetFarmAnimalsAsync(Guid farmId, Guid userId)

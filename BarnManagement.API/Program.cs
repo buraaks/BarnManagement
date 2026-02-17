@@ -25,18 +25,21 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// CORS Politikası: Nuxt ve Vue.js uygulamalarının erişimine izin ver
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowVueApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8080")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
-        });
-});
+	options.AddPolicy("AllowVueApp",
+		policy =>
+		{
+			policy.WithOrigins(
+				"http://localhost:3000",
+				"http://localhost:5173",
+				"http://localhost:8080"
+			)
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+			.AllowCredentials();
+		});
+}); 
 
 // OpenAPI/Swagger desteği ekleniyor (API dökümantasyonu için).
 builder.Services.AddEndpointsApiExplorer();
@@ -90,29 +93,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>();
 
-// Veritabanı Bağlantısı (Entity Framework Core): Provider ve bağlantı dizesi yapılandırmadan alınır.
+// Veritabanı Bağlantısı (Entity Framework Core): SQL Server kullanılır.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("DefaultConnection is not configured.");
-var databaseProvider = builder.Configuration["Database:Provider"] ?? "MySql";
-var mySqlServerVersionSetting = builder.Configuration["Database:MySqlServerVersion"] ?? "8.0.36";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    if (databaseProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
-    {
-        options.UseSqlServer(connectionString);
-        return;
-    }
-
-    if (!Version.TryParse(mySqlServerVersionSetting, out var mySqlServerVersion))
-    {
-        throw new InvalidOperationException("Database:MySqlServerVersion must be in major.minor.patch format.");
-    }
-
-    options.UseMySql(
-        connectionString,
-        new MySqlServerVersion(mySqlServerVersion),
-        mySqlOptions => mySqlOptions.EnableRetryOnFailure());
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure());
 });
 
 // Kimlik Doğrulama (Authentication) Yapılandırması: JWT (JSON Web Token) kullanılır.

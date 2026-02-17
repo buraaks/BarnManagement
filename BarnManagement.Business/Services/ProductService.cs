@@ -56,39 +56,43 @@ public class ProductService : IProductService
             throw new InvalidOperationException("User not found.");
         }
 
-        // Satışı atomik bir işlem olarak gerçekleştir
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        // Satışı atomik bir işlem olarak gerçekleştir (ExecutionStrategy ile uyumlu)
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Bakiyeye satış fiyatını (miktar x birim fiyat) ekle
-            user.Balance += product.SalePrice * quantity;
-            _context.Users.Update(user);
-
-            // Miktarı düşür veya ürünü sil
-            product.Quantity -= quantity;
-            if (product.Quantity <= 0)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                _context.Products.Remove(product);
+                // Bakiyeye satış fiyatını (miktar x birim fiyat) ekle
+                user.Balance += product.SalePrice * quantity;
+                _context.Users.Update(user);
+
+                // Miktarı düşür veya ürünü sil
+                product.Quantity -= quantity;
+                if (product.Quantity <= 0)
+                {
+                    _context.Products.Remove(product);
+                }
+                else
+                {
+                    _context.Products.Update(product);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("User {UserId} sold {Quantity} units of product {ProductId} ({ProductType}) for {Price} each", 
+                    userId, quantity, productId, product.ProductType, product.SalePrice);
+
+                return MapToDto(product);
             }
-            else
+            catch (Exception ex)
             {
-                _context.Products.Update(product);
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error selling product {ProductId}", productId);
+                throw;
             }
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            _logger.LogInformation("User {UserId} sold {Quantity} units of product {ProductId} ({ProductType}) for {Price} each", 
-                userId, quantity, productId, product.ProductType, product.SalePrice);
-
-            return MapToDto(product);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error selling product {ProductId}", productId);
-            throw;
-        }
+        });
     }
 
     public async Task<IEnumerable<ProductDto>> GetFarmProductsAsync(Guid farmId, Guid userId)
@@ -151,32 +155,36 @@ public class ProductService : IProductService
 
         decimal totalEarnings = products.Sum(p => p.SalePrice * p.Quantity);
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Kullanıcı bakiyesini toplam kazanç kadar artır
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                user.Balance += totalEarnings;
-                _context.Users.Update(user);
+                // Kullanıcı bakiyesini toplam kazanç kadar artır
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    user.Balance += totalEarnings;
+                    _context.Users.Update(user);
+                }
+
+                // Satılan ürünleri sistemden temizle
+                _context.Products.RemoveRange(products);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("User {UserId} sold all {Count} products for {Total}", userId, products.Count, totalEarnings);
+
+                return totalEarnings;
             }
-
-            // Satılan ürünleri sistemden temizle
-            _context.Products.RemoveRange(products);
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            _logger.LogInformation("User {UserId} sold all {Count} products for {Total}", userId, products.Count, totalEarnings);
-
-            return totalEarnings;
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error selling all products for farm {FarmId}", farmId);
-            throw;
-        }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error selling all products for farm {FarmId}", farmId);
+                throw;
+            }
+        });
     }
 }
