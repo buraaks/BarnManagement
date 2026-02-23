@@ -1,7 +1,7 @@
 using BarnManagement.Business.Services;
 using BarnManagement.Core.DTOs;
 using BarnManagement.Core.Entities;
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using BarnManagement.Tests.Fixtures;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;

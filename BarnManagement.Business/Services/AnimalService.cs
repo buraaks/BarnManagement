@@ -2,7 +2,7 @@ using BarnManagement.Core.DTOs;
 using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
 using BarnManagement.Core.Enums;
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

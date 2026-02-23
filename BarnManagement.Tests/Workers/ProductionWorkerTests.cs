@@ -9,7 +9,7 @@ using Moq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using BarnManagement.Core.Entities;
 using BarnManagement.Core.Enums;
 using BarnManagement.Business.Workers;

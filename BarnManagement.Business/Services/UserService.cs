@@ -1,7 +1,7 @@
 using BarnManagement.Core.DTOs;
 using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace BarnManagement.Business.Services;

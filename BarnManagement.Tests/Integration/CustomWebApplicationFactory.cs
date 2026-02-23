@@ -1,4 +1,4 @@
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;

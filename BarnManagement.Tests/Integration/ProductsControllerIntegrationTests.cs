@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using Microsoft.Extensions.DependencyInjection;
 using BarnManagement.Core.Entities;
 

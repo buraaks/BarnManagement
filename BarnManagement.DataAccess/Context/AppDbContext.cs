@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BarnManagement.Core.Entities;
 using BarnManagement.Core.Enums;
 
-namespace BarnManagement.DataAccess.Entities;
+namespace BarnManagement.DataAccess.Context;
 
 public partial class AppDbContext : DbContext
 {

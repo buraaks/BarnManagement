@@ -1,4 +1,4 @@
-using BarnManagement.DataAccess.Entities;
+using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using BarnManagement.Core.Interfaces;
 using BarnManagement.Core.Entities;
