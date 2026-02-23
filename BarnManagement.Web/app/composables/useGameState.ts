@@ -1,16 +1,17 @@
 import type { Animal, BalanceResponse, BuyAnimalRequest, Farm, GroupedProduct, Product, SellAllResponse, User } from '~/types'
 
+const user = ref<User | null>(null)
+const animals = ref<Animal[]>([])
+const products = ref<Product[]>([])
+const currentFarmId = ref<string | null>(null)
+const selectedAnimalIds = ref<string[]>([])
+const loading = ref(false)
+
+let refreshInterval: ReturnType<typeof setInterval> | null = null
+
 export function useGameState() {
   const { request } = useApi()
   const { showToast } = useToast()
-
-  const user = ref<User | null>(null)
-  const animals = ref<Animal[]>([])
-  const products = ref<Product[]>([])
-  const currentFarmId = ref<string | null>(null)
-  const selectedAnimalIds = ref<string[]>([])
-
-  let refreshInterval: ReturnType<typeof setInterval> | null = null
 
   const groupedProducts = computed<GroupedProduct[]>(() => {
     const grouped: Record<string, GroupedProduct> = {}
@@ -34,15 +35,21 @@ export function useGameState() {
   }
 
   async function init() {
-    const userData = await request<User>('/users/me')
-    if (!userData) return
+    loading.value = true
+    try {
+      const userData = await request<User>('/users/me')
+      if (!userData) return
 
-    user.value = userData
+      user.value = userData
 
-    const farms = await request<Farm[]>('/farms')
-    if (farms && farms.length > 0) {
-      currentFarmId.value = farms[0].id
-      await refreshData()
+      const farms = await request<Farm[]>('/farms')
+      if (farms && farms.length > 0) {
+        currentFarmId.value = farms[0].id
+        await refreshData()
+      }
+    }
+    finally {
+      loading.value = false
     }
   }
 
@@ -55,8 +62,12 @@ export function useGameState() {
       request<BalanceResponse>('/users/me/balance'),
     ])
 
-    if (animalsData) animals.value = animalsData
-    if (productsData) products.value = productsData
+    if (animalsData && JSON.stringify(animalsData) !== JSON.stringify(animals.value)) {
+      animals.value = animalsData
+    }
+    if (productsData && JSON.stringify(productsData) !== JSON.stringify(products.value)) {
+      products.value = productsData
+    }
     if (balanceData && user.value) user.value.balance = balanceData.balance
   }
 
@@ -82,11 +93,11 @@ export function useGameState() {
       return false
     }
 
-    let successCount = 0
-    for (const animalId of [...selectedAnimalIds.value]) {
-      const result = await request(`/animals/${animalId}/sell`, { method: 'POST' })
-      if (result) successCount++
-    }
+    const promises = selectedAnimalIds.value.map(id =>
+      request(`/animals/${id}/sell`, { method: 'POST' }),
+    )
+    const results = await Promise.all(promises)
+    const successCount = results.filter(Boolean).length
 
     if (successCount > 0) {
       showToast(`${successCount} animal(s) sold!`, 'success')
@@ -123,7 +134,14 @@ export function useGameState() {
     const result = await request('/users/reset', { method: 'POST' })
     if (result) {
       showToast('Game has been reset.', 'success')
-      setTimeout(() => window.location.reload(), 1000)
+      user.value = null
+      animals.value = []
+      products.value = []
+      currentFarmId.value = null
+      selectedAnimalIds.value = []
+      stopAutoRefresh()
+      await init()
+      startAutoRefresh()
       return true
     }
     return false
@@ -131,13 +149,33 @@ export function useGameState() {
 
   function startAutoRefresh() {
     stopAutoRefresh()
-    refreshInterval = setInterval(refreshData, 1000)
+    refreshInterval = setInterval(refreshData, 3000)
+
+    if (import.meta.client) {
+      document.addEventListener('visibilitychange', handleVisibility)
+    }
   }
 
   function stopAutoRefresh() {
     if (refreshInterval) {
       clearInterval(refreshInterval)
       refreshInterval = null
+    }
+    if (import.meta.client) {
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }
+
+  function handleVisibility() {
+    if (document.hidden) {
+      if (refreshInterval) {
+        clearInterval(refreshInterval)
+        refreshInterval = null
+      }
+    }
+    else {
+      refreshData()
+      refreshInterval = setInterval(refreshData, 3000)
     }
   }
 
@@ -148,6 +186,7 @@ export function useGameState() {
     groupedProducts,
     currentFarmId: readonly(currentFarmId),
     selectedAnimalIds,
+    loading: readonly(loading),
     toggleAnimalSelection,
     init,
     refreshData,

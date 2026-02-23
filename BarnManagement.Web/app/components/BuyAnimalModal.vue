@@ -1,0 +1,240 @@
+<template>
+  <div v-if="visible" class="modal-overlay" @click.self="$emit('close')">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Buy Animal</span>
+        <button class="close-btn" @click="$emit('close')">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Animal Name:</label>
+          <input v-model="name" type="text" placeholder="Enter a name...">
+        </div>
+        <div class="form-group">
+          <label>Animal Type:</label>
+          <select v-model="species">
+            <option v-for="s in ANIMAL_SPECIES_LIST" :key="s" :value="s">
+              {{ s }}
+            </option>
+          </select>
+        </div>
+        <div class="price-info">
+          <span>Price: </span>
+          <strong>{{ config.price.toFixed(2) }} TL</strong>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="win-btn btn-success" @click="handleBuy">
+          Buy
+        </button>
+        <button class="win-btn btn-danger" @click="$emit('close')">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { AnimalSpecies } from '~/types'
+import { ANIMAL_CONFIGS, ANIMAL_SPECIES_LIST } from '~/constants/animals'
+
+defineProps<{
+  visible: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+  buy: [data: { species: AnimalSpecies, name: string, purchasePrice: number, productionInterval: number }]
+}>()
+
+const name = ref('')
+const species = ref<AnimalSpecies>('Cow')
+
+const config = computed(() => ANIMAL_CONFIGS[species.value])
+
+function handleBuy() {
+  emit('buy', {
+    species: species.value,
+    name: name.value || species.value,
+    purchasePrice: config.value.price,
+    productionInterval: config.value.productionInterval,
+  })
+  name.value = ''
+  species.value = 'Cow'
+}
+</script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 1.25rem;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 1rem;
+}
+
+.win-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-success:hover {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+.price-info {
+  padding: 0.75rem 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 90vw;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes modalSlideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 0.875rem;
+  }
+
+  .win-btn {
+    padding: 0.875rem;
+    font-size: 1rem;
+  }
+
+  .price-info {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9rem;
+  }
+}
+</style>
