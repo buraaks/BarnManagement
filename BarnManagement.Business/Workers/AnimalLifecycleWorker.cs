@@ -1,3 +1,4 @@
+using BarnManagement.Core.Interfaces;
 using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +11,14 @@ public class AnimalLifecycleWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AnimalLifecycleWorker> _logger;
-    private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2); 
+    private readonly ISseBroadcaster _broadcaster;
+    private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2);
 
-    public AnimalLifecycleWorker(IServiceProvider serviceProvider, ILogger<AnimalLifecycleWorker> logger)
+    public AnimalLifecycleWorker(IServiceProvider serviceProvider, ILogger<AnimalLifecycleWorker> logger, ISseBroadcaster broadcaster)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _broadcaster = broadcaster;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,13 +50,13 @@ public class AnimalLifecycleWorker : BackgroundService
         var now = DateTime.UtcNow;
 
         var deadAnimals = await context.Animals.ToListAsync(stoppingToken);
-            
+
         var animalsToRemove = deadAnimals
             .Where(a => {
                 var lifeSpanSeconds = a.LifeSpanDays > 100 ? a.LifeSpanDays : (a.LifeSpanDays * 30);
                 var ageSeconds = (now - a.BirthDate).TotalSeconds;
                 var isDead = ageSeconds >= lifeSpanSeconds;
-                
+
                 return isDead;
             })
             .ToList();
@@ -70,6 +73,7 @@ public class AnimalLifecycleWorker : BackgroundService
             }
 
             await context.SaveChangesAsync(stoppingToken);
+            await _broadcaster.BroadcastUpdateAsync("refresh", "lifecycle", stoppingToken);
         }
     }
 }

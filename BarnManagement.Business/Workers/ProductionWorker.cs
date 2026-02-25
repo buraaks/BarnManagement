@@ -13,12 +13,14 @@ public class ProductionWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ProductionWorker> _logger;
+    private readonly ISseBroadcaster _broadcaster;
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(2);
 
-    public ProductionWorker(IServiceProvider serviceProvider, ILogger<ProductionWorker> logger)
+    public ProductionWorker(IServiceProvider serviceProvider, ILogger<ProductionWorker> logger, ISseBroadcaster broadcaster)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _broadcaster = broadcaster;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -64,7 +66,7 @@ public class ProductionWorker : BackgroundService
                     var productType = GetProductType(animal.Species);
                     var marketService = scope.ServiceProvider.GetRequiredService<IMarketService>();
                     var currentPrice = marketService.GetProductPrice(productType);
-                    
+
                     var existingProduct = await context.Products
                         .FirstOrDefaultAsync(p => p.FarmId == animal.FarmId && p.ProductType == productType, stoppingToken);
 
@@ -93,6 +95,7 @@ public class ProductionWorker : BackgroundService
                     context.Animals.Update(animal);
 
                     await context.SaveChangesAsync(stoppingToken);
+                    await _broadcaster.BroadcastUpdateAsync("refresh", "production", stoppingToken);
                 }
                 catch (Exception ex)
                 {

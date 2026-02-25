@@ -13,11 +13,13 @@ namespace BarnManagement.API.Controllers;
 public class AnimalsController : ControllerBase
 {
     private readonly IAnimalService _animalService;
+    private readonly ISseBroadcaster _broadcaster;
 
     // Bağımlılık Enjeksiyonu: AnimalService constructor üzerinden alınır.
-    public AnimalsController(IAnimalService animalService)
+    public AnimalsController(IAnimalService animalService, ISseBroadcaster broadcaster)
     {
         _animalService = animalService;
+        _broadcaster = broadcaster;
     }
 
     // Yardımcı Metot: Token içerisindeki 'NameIdentifier' claim'inden kullanıcı ID'sini çeker.
@@ -39,7 +41,9 @@ public class AnimalsController : ControllerBase
         {
             var userId = GetUserId(); // İsteği yapan kullanıcıyı bul
             var animal = await _animalService.BuyAnimalAsync(farmId, request, userId);
-            
+
+            await _broadcaster.BroadcastUpdateAsync("refresh", "animal_buy");
+
             // Başarılı olursa 201 Created döner ve yeni hayvanın bilgilerini verir.
             return CreatedAtAction(nameof(GetAnimalById), new { id = animal.Id }, animal);
         }
@@ -66,6 +70,8 @@ public class AnimalsController : ControllerBase
             var animal = await _animalService.SellAnimalAsync(id, userId);
 
             if (animal == null) return NotFound("Hayvan bulunamadı.");
+
+            await _broadcaster.BroadcastUpdateAsync("refresh", "animal_sell");
 
             return Ok(animal);
         }

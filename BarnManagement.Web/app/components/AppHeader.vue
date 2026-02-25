@@ -106,11 +106,9 @@ h1 {
 
 @media (max-width: 768px) {
   .app-header {
-    flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
     margin-bottom: 1.5rem;
-    text-align: center;
   }
 
   .brand .subtitle {
@@ -118,29 +116,56 @@ h1 {
   }
 
   h1 {
-    font-size: 1.35rem;
+    font-size: 1.2rem;
   }
 
   .cash-card {
-    font-size: 1.1rem;
-    padding: 0.4rem 1rem;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.875rem;
+  }
+
+  .theme-toggle,
+  .logout-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .app-header {
-    padding: 0.875rem;
-    margin-bottom: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
     border-radius: var(--radius-sm);
   }
 
   h1 {
-    font-size: 1.15rem;
+    font-size: 1rem;
+  }
+
+  h1 i {
+    display: none;
   }
 
   .cash-card {
-    font-size: 1rem;
-    padding: 0.35rem 0.875rem;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .theme-toggle,
+  .logout-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+    min-width: 34px;
+  }
+
+  .header-actions {
+    gap: 0.35rem;
   }
 }
 </style>

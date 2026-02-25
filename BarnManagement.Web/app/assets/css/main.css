@@ -45,6 +45,13 @@
   padding: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family:
     "Inter",
@@ -56,6 +63,9 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  min-height: 100dvh;
 }
 
 @keyframes fadeIn {
@@ -90,9 +100,10 @@ body {
   background: var(--bg-color);
   color: var(--text-main);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
   outline: none;
   transition: var(--transition);
+  -webkit-appearance: none;
 }
 
 .form-group input:focus,

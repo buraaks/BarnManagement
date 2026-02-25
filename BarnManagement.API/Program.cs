@@ -39,15 +39,15 @@ builder.Services.AddCors(options =>
 			.AllowAnyHeader()
 			.AllowCredentials();
 		});
-}); 
+});
 
 // OpenAPI/Swagger desteği ekleniyor (API dökümantasyonu için).
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "Barn Management API", 
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Barn Management API",
         Version = "v1",
         Description = "Barn Management - Çiftlik ve Hayvan Yönetim Sistemi API",
         Contact = new OpenApiContact
@@ -131,6 +131,7 @@ builder.Services.AddScoped<IFarmService, FarmService>(); // Çiftlik işlemleri
 builder.Services.AddScoped<IAnimalService, AnimalService>(); // Hayvan işlemleri
 builder.Services.AddScoped<IProductService, ProductService>(); // Ürün işlemleri
 builder.Services.AddSingleton<IMarketService, MarketService>(); // Market (fiyat) servisi (tekil örnek)
+builder.Services.AddSingleton<ISseBroadcaster, SseBroadcaster>(); // SSE Broadcaster
 
 // Arka Plan İşçileri (Background Workers): Otomatik üretim ve yaşam döngüsü yönetimi için.
 builder.Services.AddHostedService<BarnManagement.Business.Workers.ProductionWorker>();

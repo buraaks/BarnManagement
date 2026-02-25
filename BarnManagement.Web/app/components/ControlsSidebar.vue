@@ -99,13 +99,18 @@ defineEmits<{
 
 @media (max-width: 480px) {
   .controls-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
   }
 
   .btn {
-    padding: 0.875rem;
-    font-size: 0.9rem;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
   }
 }
 

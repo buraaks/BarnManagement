@@ -13,10 +13,12 @@ namespace BarnManagement.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly ISseBroadcaster _broadcaster;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, ISseBroadcaster broadcaster)
     {
         _productService = productService;
+        _broadcaster = broadcaster;
     }
 
     private Guid GetUserId()
@@ -53,8 +55,11 @@ public class ProductsController : ControllerBase
         {
             var userId = GetUserId();
             var product = await _productService.SellProductAsync(id, quantity, userId);
-            
+
             if (product == null) return NotFound("Ürün bulunamadı.");
+
+            await _broadcaster.BroadcastUpdateAsync("refresh", "product_sell");
+
             return Ok(product);
         }
         catch (UnauthorizedAccessException)
@@ -86,6 +91,9 @@ public class ProductsController : ControllerBase
         {
             var userId = GetUserId();
             var totalEarnings = await _productService.SellAllProductsAsync(farmId, userId);
+
+            await _broadcaster.BroadcastUpdateAsync("refresh", "product_sell_all");
+
             return Ok(new { totalEarnings });
         }
         catch (UnauthorizedAccessException)

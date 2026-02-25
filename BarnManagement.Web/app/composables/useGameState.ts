@@ -7,8 +7,6 @@ const currentFarmId = ref<string | null>(null)
 const selectedAnimalIds = ref<string[]>([])
 const loading = ref(false)
 
-let refreshInterval: ReturnType<typeof setInterval> | null = null
-
 export function useGameState() {
   const { request } = useApi()
   const { showToast } = useToast()
@@ -148,8 +146,15 @@ export function useGameState() {
   }
 
   function startAutoRefresh() {
-    stopAutoRefresh()
-    refreshInterval = setInterval(refreshData, 3000)
+    const { connect } = useSse()
+
+    // Connect to SSE events
+    connect('/events', () => {}, {
+      refresh: () => {
+        console.log('SSE: Refresh event received')
+        refreshData()
+      }
+    })
 
     if (import.meta.client) {
       document.addEventListener('visibilitychange', handleVisibility)
@@ -157,25 +162,17 @@ export function useGameState() {
   }
 
   function stopAutoRefresh() {
-    if (refreshInterval) {
-      clearInterval(refreshInterval)
-      refreshInterval = null
-    }
+    const { disconnect } = useSse()
+    disconnect()
+
     if (import.meta.client) {
       document.removeEventListener('visibilitychange', handleVisibility)
     }
   }
 
   function handleVisibility() {
-    if (document.hidden) {
-      if (refreshInterval) {
-        clearInterval(refreshInterval)
-        refreshInterval = null
-      }
-    }
-    else {
+    if (!document.hidden) {
       refreshData()
-      refreshInterval = setInterval(refreshData, 3000)
     }
   }
 

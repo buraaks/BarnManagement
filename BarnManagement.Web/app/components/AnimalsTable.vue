@@ -20,11 +20,11 @@
           :class="{ 'selected-row': selectedIds.includes(animal.id) }"
           @click="$emit('select', animal.id)"
         >
-          <td>{{ animal.id.substring(0, 8) }}</td>
-          <td>{{ animal.name }}</td>
-          <td>{{ getAge(animal.birthDate) }} Years</td>
-          <td>{{ animal.species }}</td>
-          <td>
+          <td data-label="ID">{{ animal.id.substring(0, 8) }}</td>
+          <td data-label="Name">{{ animal.name }}</td>
+          <td data-label="Age">{{ getAge(animal.birthDate) }} Years</td>
+          <td data-label="Type">{{ animal.species }}</td>
+          <td data-label="Progress">
             <ProgressBar :value="getProgress(animal)" />
           </td>
         </tr>
@@ -152,69 +152,47 @@ tbody tr:hover {
     border-radius: var(--radius-sm);
   }
 
-  .grid-container :deep(table) {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .grid-container :deep(thead),
-  .grid-container :deep(tbody) {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-  }
-
-  th,
-  td {
-    padding: 0.75rem 0.625rem;
-    font-size: 0.85rem;
-    white-space: nowrap;
-  }
-
   .grid-header {
     padding: 1rem;
     font-size: 1rem;
   }
-}
 
-@media (max-width: 480px) {
-  table thead {
-    display: none;
+  thead {
+    display: none !important;
   }
 
   table,
-  table tbody {
-    display: block;
+  tbody {
+    display: block !important;
   }
 
-  table tbody tr {
+  tbody tr {
     display: flex;
     flex-direction: column;
-    padding: 0.875rem;
+    padding: 1rem;
     border-top: 1px solid var(--border-color);
-    gap: 0.35rem;
+    gap: 0.4rem;
     position: relative;
   }
 
-  table tbody tr:first-child {
+  tbody tr:first-child {
     border-top: none;
   }
 
-  table tbody tr td {
+  tbody tr td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.25rem 0;
+    padding: 0.2rem 0;
     border-top: none;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     white-space: normal;
   }
 
-  table tbody tr td::before {
+  tbody tr td::before {
     content: attr(data-label);
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--text-muted);
@@ -224,7 +202,7 @@ tbody tr:hover {
 
   .selected-row {
     border-left: 4px solid var(--primary) !important;
-    padding-left: calc(0.875rem - 4px) !important;
+    padding-left: calc(1rem - 4px) !important;
     background-color: rgba(79, 70, 229, 0.06) !important;
     border-radius: var(--radius-sm);
   }
