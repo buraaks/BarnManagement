@@ -33,7 +33,7 @@
         :selected-count="selectedAnimalIds.length"
         @buy="showBuyModal = true"
         @sell="handleSellAnimals"
-        @sell-products="handleSellProducts"
+        @sell-products="showSellProductModal = true"
         @reset="handleReset"
       />
     </div>
@@ -42,6 +42,13 @@
       :visible="showBuyModal"
       @close="showBuyModal = false"
       @buy="handleBuyAnimal"
+    />
+
+    <SellProductModal
+      :visible="showSellProductModal"
+      :products="groupedProducts"
+      @close="showSellProductModal = false"
+      @sell="handleSellProduct"
     />
 
     <ConfirmModal
@@ -72,6 +79,7 @@ const {
   buyAnimal,
   sellAnimals,
   sellAllProducts,
+  sellProduct,
   resetGame,
   startAutoRefresh,
   stopAutoRefresh,
@@ -83,6 +91,7 @@ const { logout } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 
 const showBuyModal = ref(false)
+const showSellProductModal = ref(false)
 
 function handleLogout() {
   stopAutoRefresh()
@@ -108,8 +117,9 @@ function handleSellAnimals() {
   confirm('Sell Animals', message, sellAnimals)
 }
 
-function handleSellProducts() {
-  confirm('Sell All Products', 'Sell all products in storage?', sellAllProducts)
+async function handleSellProduct(type: string, quantity: number) {
+  const success = await sellProduct(type, quantity)
+  if (success) showSellProductModal.value = false
 }
 
 function handleReset() {

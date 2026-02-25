@@ -128,6 +128,22 @@ export function useGameState() {
     return false
   }
 
+  async function sellProduct(productType: string, quantity: number): Promise<boolean> {
+    const product = products.value.find(p => p.productType === productType)
+    if (!product) return false
+
+    const result = await request(`/products/${product.id}/sell?quantity=${quantity}`, {
+      method: 'POST',
+    })
+
+    if (result) {
+      showToast(`Sold ${quantity} ${productType} successfully!`, 'success')
+      await refreshData()
+      return true
+    }
+    return false
+  }
+
   async function resetGame(): Promise<boolean> {
     const result = await request('/users/reset', { method: 'POST' })
     if (result) {
@@ -190,6 +206,7 @@ export function useGameState() {
     buyAnimal,
     sellAnimals,
     sellAllProducts,
+    sellProduct,
     resetGame,
     startAutoRefresh,
     stopAutoRefresh,
