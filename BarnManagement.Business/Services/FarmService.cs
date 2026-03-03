@@ -5,6 +5,8 @@ using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, çiftlik domainindeki iş kurallarını uygular ve çiftlik verisini yönetir.
+
 
 public class FarmService : IFarmService
 {

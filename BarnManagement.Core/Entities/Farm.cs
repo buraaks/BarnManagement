@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace BarnManagement.Core.Entities;
+// Kısa mimari özet: Bu entity, çiftlik domainini ve sahiplik/ilişki bilgilerini veri modeli olarak temsil eder.
+
 
 public partial class Farm
 {

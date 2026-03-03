@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace BarnManagement.Core.Entities;
+// Kısa mimari özet: Bu entity, sistem kullanıcısının kimlik, yetkiye temel olan ve finansal alanlarını temsil eder.
+
 
 public partial class User
 {

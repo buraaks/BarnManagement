@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Workers;
+// Kısa mimari özet: Bu arka plan işçisi, hayvanların yaşam döngüsüyle ilgili otomatik bakım/güncelleme işlemlerini yürütür.
+
 
 public class AnimalLifecycleWorker : BackgroundService
 {
