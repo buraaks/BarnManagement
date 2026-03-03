@@ -39,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
 import type { Animal } from '~/types'
 
 defineProps<{
@@ -50,13 +51,29 @@ defineEmits<{
   select: [id: string]
 }>()
 
+const nowTick = ref(Date.now())
+let tickTimer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  tickTimer = setInterval(() => {
+    nowTick.value = Date.now()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (tickTimer) {
+    clearInterval(tickTimer)
+    tickTimer = null
+  }
+})
+
 function fixDate(dateStr: string): Date {
   return new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
 }
 
 function getAge(birthDate: string): number {
   const birth = fixDate(birthDate)
-  const now = new Date()
+  const now = new Date(nowTick.value)
   const diffSeconds = Math.max(0, (now.getTime() - birth.getTime()) / 1000)
   return Math.floor(diffSeconds / 30)
 }
@@ -64,7 +81,7 @@ function getAge(birthDate: string): number {
 function getProgress(animal: Animal): number {
   if (!animal.nextProductionAt || animal.productionInterval <= 0) return 0
 
-  const now = new Date()
+  const now = new Date(nowTick.value)
   const nextProd = fixDate(animal.nextProductionAt)
 
   if (nextProd <= now) return 100
