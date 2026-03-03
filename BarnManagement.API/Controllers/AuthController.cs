@@ -3,6 +3,8 @@ using BarnManagement.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, kimlik doğrulama akışını (kayıt ve giriş) HTTP endpointleri üzerinden dış dünyaya açar.
+
 
 [ApiController]
 [Route("api/auth")] // Tüm istekler /api/auth ile başlar

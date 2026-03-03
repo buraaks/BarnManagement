@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, hayvan satın alma/yaşam döngüsü/üretim gibi iş mantıklarını koordine eder.
+
 
 public class AnimalService : IAnimalService
 {

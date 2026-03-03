@@ -5,6 +5,8 @@ using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, kullanıcıya ait iş kurallarını ve veri erişimini bir arada yürüten uygulama servisidir.
+
 
 public class UserService : IUserService
 {

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, kullanıcıya ait profil ve bakiye gibi kullanıcı odaklı işlemleri yönetir.
+
 
 [Authorize]
 [ApiController]

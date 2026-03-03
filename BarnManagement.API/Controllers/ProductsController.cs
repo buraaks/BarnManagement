@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, ürün üretimi/satışı ile ilgili işlemleri HTTP endpointleri olarak sunar.
+
 
 // Ürün işlemleri için JWT tabanlı yetkilendirme gereklidir.
 [Authorize]

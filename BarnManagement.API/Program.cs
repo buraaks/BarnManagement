@@ -12,6 +12,8 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 
 // Uygulama oluşturucu (Builder) başlatılıyor.
+// Kısa mimari özet: Bu dosya API uygulamasının giriş noktasıdır; DI, güvenlik, veri erişimi, arka plan işçileri ve HTTP middleware hattını yapılandırır.
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog yapılandırması: Loglama ayarları 'appsettings.json' dosyasından okunur.
