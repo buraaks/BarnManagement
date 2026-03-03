@@ -2,6 +2,8 @@ using BarnManagement.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, istemcilere gerçek zamanlı olay akışı sağlamak için SSE uçlarını sunar.
+
 
 [ApiController]
 [Route("api/[controller]")]

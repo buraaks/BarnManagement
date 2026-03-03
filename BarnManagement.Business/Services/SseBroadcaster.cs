@@ -3,6 +3,8 @@ using BarnManagement.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu bileşen, sunucu tarafı olayları bağlı istemcilere yayınlamak için SSE yayın altyapısını sağlar.
+
 
 public class SseBroadcaster : ISseBroadcaster
 {

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, ürün envanteri ve satış süreçlerine ait iş kurallarını işletir.
+
 
 public class ProductService : IProductService
 {

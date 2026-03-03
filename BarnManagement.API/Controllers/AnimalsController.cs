@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, hayvan yönetimi işlevlerini API endpointleri olarak sunar ve servis katmanına delegasyon yapar.
+
 
 // [Authorize]: Bu controller'daki tüm endpoint'ler için geçerli bir JWT token zorunludur.
 [Authorize]

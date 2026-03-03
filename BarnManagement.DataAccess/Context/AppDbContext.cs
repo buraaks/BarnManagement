@@ -5,6 +5,8 @@ using BarnManagement.Core.Entities;
 using BarnManagement.Core.Enums;
 
 namespace BarnManagement.DataAccess.Context;
+// Kısa mimari özet: Bu DbContext, Entity Framework Core üzerinden uygulamanın veri modelini, tablo eşlemelerini ve ilişkilerini yönetir.
+
 
 public partial class AppDbContext : DbContext
 {

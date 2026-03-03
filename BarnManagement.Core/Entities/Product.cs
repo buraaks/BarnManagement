@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace BarnManagement.Core.Entities;
+// Kısa mimari özet: Bu entity, çiftlikte üretilen ürünlerin kalıcı veri modelini temsil eder.
+
 
 public partial class Product
 {

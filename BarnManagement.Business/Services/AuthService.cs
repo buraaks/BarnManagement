@@ -5,6 +5,8 @@ using BarnManagement.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, kayıt ve giriş senaryolarının iş kurallarını yürütür; parola doğrulama ve token üretimini koordine eder.
+
 
 public class AuthService : IAuthService
 {
