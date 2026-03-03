@@ -14,7 +14,6 @@ public class SseBroadcaster : ISseBroadcaster
     public SseBroadcaster(ILogger<SseBroadcaster> logger)
     {
         _logger = logger;
-        // Unbounded channel for simplicity, though in a high-load scenario we'd use bounded.
         _channel = Channel.CreateUnbounded<string>();
     }
 

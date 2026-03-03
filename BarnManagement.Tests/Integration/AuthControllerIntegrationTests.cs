@@ -8,9 +8,6 @@ using Xunit;
 
 namespace BarnManagement.Tests.Integration
 {
-    // Program sınıfına erişebilmek için API projesinin referans alınmış olması gerekir.
-    // .NET 6+ Minimal API'lerde Program sınıfı gizli (internal) olabilir, 
-    // bunu API projesindeki Program.cs sonuna 'public partial class Program { }' ekleyerek aşabiliriz.
     public class AuthControllerIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
     {
         private readonly CustomWebApplicationFactory<Program> _factory;
