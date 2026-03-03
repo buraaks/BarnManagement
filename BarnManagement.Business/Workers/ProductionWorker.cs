@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Workers;
+// Kısa mimari özet: Bu arka plan işçisi, zamanlanmış üretim süreçlerini periyodik olarak çalıştırır.
+
 
 public class ProductionWorker : BackgroundService
 {

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu bileşen, kullanıcı kimliğine dayalı JWT üretimini üstlenerek güvenlik katmanına token sağlar.
+
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarnManagement.API.Controllers;
+// Kısa mimari özet: Bu controller, çiftlik oluşturma ve yönetim işlemlerini API üzerinden erişilebilir hale getirir.
+
 
 // Bu controller'daki işlemler için giriş yapılmış olması şarttır.
 [Authorize]

@@ -2,6 +2,8 @@ using BarnManagement.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BarnManagement.Business.Services;
+// Kısa mimari özet: Bu servis, pazar fiyatlandırması veya piyasa verisi gibi paylaşılan market mantığını merkezileştirir.
+
 
 public class MarketService : IMarketService
 {

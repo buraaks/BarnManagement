@@ -1,6 +1,8 @@
 using BarnManagement.Core.DTOs;
 
 namespace BarnManagement.Core.Interfaces;
+// Kısa mimari özet: Bu arayüz, ürün süreçlerine ait servis operasyonlarının sözleşmesini tanımlar.
+
 
 public interface IProductService
 {

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BarnManagement.Core.Enums;
 
 namespace BarnManagement.Core.Entities;
+// Kısa mimari özet: Bu entity, hayvan domain nesnesinin veritabanı karşılığını ve ilişkilerini temsil eder.
+
 
 public partial class Animal
 {

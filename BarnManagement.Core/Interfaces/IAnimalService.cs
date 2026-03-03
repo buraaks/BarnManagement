@@ -1,6 +1,8 @@
 using BarnManagement.Core.DTOs;
 
 namespace BarnManagement.Core.Interfaces;
+// Kısa mimari özet: Bu arayüz, hayvan yönetimi ve ilgili iş akışları için servis sözleşmesini tanımlar.
+
 
 public interface IAnimalService
 {
